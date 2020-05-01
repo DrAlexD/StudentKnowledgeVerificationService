@@ -10,17 +10,17 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.userType === "student") {
-                    window.location.href = `/student/${resText.userId}`;
+                if (resText.type === "student") {
+                    window.location.href = `/student/${resText.id}`;
                 }
 
-                if (resText.userType === "professor") {
+                if (resText.type === "professor") {
                     document.getElementById("addStudentPageButton").hidden = true;
                     document.getElementById("addProfessorPageButton").hidden = true;
                     let professorButton = document.getElementById('professorButton');
                     professorButton.hidden = false;
                     professorButton.onclick = function () {
-                        window.location.href = `/professor/${resText.userId}`;
+                        window.location.href = `/professor/${resText.id}`;
                     }
                 }
 

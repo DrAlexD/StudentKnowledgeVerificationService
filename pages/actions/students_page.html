@@ -10,13 +10,14 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.userType === "student") {
-                    window.location.href = `/student/${resText.userId}`;
+                if (resText.type === "student") {
+                    window.location.href = `/student/${resText.id}`;
                 }
 
                 let getAllStudents = async function () {
                     response = await fetch(`/students/all.json`);
                     resText = await response.json();
+
                     if (response.ok) {
                         let studentsTable = document.getElementById("students");
                         studentsTable.innerHTML = "";
@@ -29,9 +30,8 @@
                                 `                           onclick="window.location.href = '/student/${resText[i].Student_Id}'"/></td>\n` +
                                 "            </tr>";
                         }
-                    } else {
-                        window.location.href = '/actions';
-                    }
+                    } else
+                        alert(resText);
                 };
 
                 await getAllStudents();

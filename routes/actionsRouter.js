@@ -17,25 +17,23 @@ actionsRouter.get('/', (req, res) => {
 });
 
 actionsRouter.get('/session/info.json', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
-        res.send(JSON.stringify(req.session.username));
+    if (typeof req.session.user != 'undefined') {
+        res.status(200).json(req.session.user);
     } else {
         res.redirect('/login');
     }
 });
 
 actionsRouter.get('/logout', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
-        console.log(`Success log out: ${req.session.username.userType}`);
+    if (typeof req.session.user != 'undefined') {
+        console.log(`Success log out: ${req.session.user.type}`);
         req.session.destroy();
-        res.end();
-    } else {
-        res.redirect('/login');
     }
+    res.end();
 });
 
 actionsRouter.get('/login', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         res.redirect('/actions');
     } else {
         res.sendFile(path.join(__dirname, '../pages/actions/log_in_page.html'));
@@ -46,14 +44,14 @@ actionsRouter.post('/login', (req, res) => {
     if (req.body.username !== "" && req.body.password !== "") {
         if (req.body.username === "admin") {
             if (req.body.password === "admin") {
-                req.session.username = {
-                    userType: "admin",
-                    userId: "0"
+                req.session.user = {
+                    type: "admin",
+                    id: "0"
                 };
-                console.log(`Success log in: ${req.session.username.userType}`);
+                console.log("Success log in: admin");
                 res.end();
             } else {
-                res.status(404).send(JSON.stringify("Неправильный пароль для пользователя: admin"));
+                res.status(404).json("Неправильный пароль для пользователя: admin");
             }
         } else {
             con.query(`SELECT * FROM student WHERE Login='${req.body.username}' AND Password='${req.body.password}'`,
@@ -62,11 +60,11 @@ actionsRouter.post('/login', (req, res) => {
                         console.error(err);
                     else {
                         if (typeof result[0] != 'undefined') {
-                            req.session.username = {
-                                userType: "student",
-                                userId: result[0].studentId
+                            req.session.user = {
+                                type: "student",
+                                id: result[0].Student_id
                             };
-                            console.log(`Success log in: ${result[0].login}`);
+                            console.log(`Success log in: ${result[0].Login}`);
                             res.end();
                         } else {
                             con.query(`SELECT * FROM professor WHERE Login='${req.body.username}' AND Password='${req.body.password}'`,
@@ -75,14 +73,14 @@ actionsRouter.post('/login', (req, res) => {
                                         console.error(err2);
                                     else {
                                         if (typeof result2[0] != 'undefined') {
-                                            req.session.username = {
-                                                userType: "professor",
-                                                userId: result2[0].professorId
+                                            req.session.user = {
+                                                type: "professor",
+                                                id: result2[0].Professor_id
                                             };
-                                            console.log(`Success log in: ${result2[0].login}`);
+                                            console.log(`Success log in: ${result2[0].Login}`);
                                             res.end();
                                         } else {
-                                            res.status(404).send(JSON.stringify("Неправильный логин или пароль"));
+                                            res.status(404).json("Неправильный логин или пароль");
                                         }
                                     }
                                 }
@@ -93,12 +91,12 @@ actionsRouter.post('/login', (req, res) => {
             );
         }
     } else {
-        res.status(404).send(JSON.stringify("Не введены логин или пароль"));
+        res.status(404).json("Не введены логин или пароль");
     }
 });
 
 actionsRouter.get('/actions', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         res.sendFile(path.join(__dirname, '../pages/actions/actions_page.html'));
     } else {
         res.redirect('/login');
@@ -106,7 +104,7 @@ actionsRouter.get('/actions', (req, res) => {
 });
 
 actionsRouter.get('/add/student', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         res.sendFile(path.join(__dirname, '../pages/actions/add_student_page.html'));
     } else {
         res.redirect('/login');
@@ -123,22 +121,22 @@ actionsRouter.post('/add/student', (req, res) => {
                 function (err1) {
                     if (err1) {
                         console.error(err1);
-                        res.status(500).send(JSON.stringify("Copy of existing student"));
+                        res.status(500).json("Копия имеющегося студента");
                     } else {
                         res.end();
                     }
                 }
             );
         } else {
-            res.status(500).send(JSON.stringify("Копия имеющегося админа"));
+            res.status(500).json("Недопустимый логин: admin");
         }
     } else {
-        res.status(404).send(JSON.stringify("Не введены имя, фамилия или группа"));
+        res.status(404).json("Не введены имя, фамилия или группа");
     }
 });
 
 actionsRouter.get('/students', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         res.sendFile(path.join(__dirname, '../pages/actions/students_page.html'));
     } else {
         res.redirect('/login');
@@ -146,16 +144,16 @@ actionsRouter.get('/students', (req, res) => {
 });
 
 actionsRouter.get('/students/all.json', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         con.query(`SELECT * FROM student`,
             function (err, result) {
                 if (err)
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined') {
-                        res.status(200).send(JSON.stringify(result));
+                        res.status(200).json(result);
                     } else {
-                        res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                        res.status(404).json(`Не найдены студенты`);
                     }
                 }
             }
@@ -175,9 +173,9 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
@@ -189,9 +187,9 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
@@ -205,9 +203,9 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
@@ -219,9 +217,9 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
@@ -237,9 +235,9 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
@@ -251,9 +249,9 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
@@ -267,22 +265,22 @@ actionsRouter.post('/students', (req, res) => {
                             console.error(err);
                         } else {
                             if (typeof result[0] != 'undefined') {
-                                res.status(200).send(JSON.stringify(result));
+                                res.status(200).json(result);
                             } else {
-                                res.status(404).send(JSON.stringify(`Не найдены студенты`));
+                                res.status(404).json(`Не найдены студенты`);
                             }
                         }
                     }
                 );
             } else {
-                res.status(404).send(JSON.stringify("Не введены имя, фамилия или группа"));
+                res.status(404).json("Не введены имя, фамилия или группа");
             }
         }
     }
 });
 
 actionsRouter.get('/add/professor', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         res.sendFile(path.join(__dirname, '../pages/actions/add_professor_page.html'));
     } else {
         res.redirect('/login');
@@ -298,22 +296,22 @@ actionsRouter.post('/add/professor', (req, res) => {
                 function (err1) {
                     if (err1) {
                         console.error(err1);
-                        res.status(500).send(JSON.stringify("Копия имеющегося преподавателя"));
+                        res.status(500).json("Копия имеющегося преподавателя");
                     } else {
                         res.end();
                     }
                 }
             );
         } else {
-            res.status(500).send(JSON.stringify("Копия имеющегося админа"));
+            res.status(500).json("Недопустимый логин: admin");
         }
     } else {
-        res.status(404).send(JSON.stringify("Не введены имя или фамилия"));
+        res.status(404).json("Не введены имя или фамилия");
     }
 });
 
 actionsRouter.get('/professors', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         res.sendFile(path.join(__dirname, '../pages/actions/professors_page.html'));
     } else {
         res.redirect('/login');
@@ -321,16 +319,16 @@ actionsRouter.get('/professors', (req, res) => {
 });
 
 actionsRouter.get('/professors/all.json', (req, res) => {
-    if (typeof req.session.username != 'undefined') {
+    if (typeof req.session.user != 'undefined') {
         con.query(`SELECT * FROM professor`,
             function (err, result) {
                 if (err)
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined') {
-                        res.status(200).send(JSON.stringify(result));
+                        res.status(200).json(result);
                     } else {
-                        res.status(404).send(JSON.stringify(`Не найдены преподаватели`));
+                        res.status(404).json(`Не найдены преподаватели`);
                     }
                 }
             }
@@ -349,9 +347,9 @@ actionsRouter.post('/professors', (req, res) => {
                         console.error(err);
                     } else {
                         if (typeof result[0] != 'undefined') {
-                            res.status(200).send(JSON.stringify(result));
+                            res.status(200).json(result);
                         } else {
-                            res.status(404).send(JSON.stringify(`Не найдены преподаватели`));
+                            res.status(404).json(`Не найдены преподаватели`);
                         }
                     }
                 }
@@ -363,9 +361,9 @@ actionsRouter.post('/professors', (req, res) => {
                         console.error(err);
                     } else {
                         if (typeof result[0] != 'undefined') {
-                            res.status(200).send(JSON.stringify(result));
+                            res.status(200).json(result);
                         } else {
-                            res.status(404).send(JSON.stringify(`Не найдены преподаватели`));
+                            res.status(404).json(`Не найдены преподаватели`);
                         }
                     }
                 }
@@ -379,15 +377,15 @@ actionsRouter.post('/professors', (req, res) => {
                         console.error(err);
                     } else {
                         if (typeof result[0] != 'undefined') {
-                            res.status(200).send(JSON.stringify(result));
+                            res.status(200).json(result);
                         } else {
-                            res.status(404).send(JSON.stringify(`Не найдены преподаватели`));
+                            res.status(404).json(`Не найдены преподаватели`);
                         }
                     }
                 }
             );
         } else {
-            res.status(404).send(JSON.stringify("Не введены имя или фамилия"));
+            res.status(404).json("Не введены имя или фамилия");
         }
     }
 });

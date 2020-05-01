@@ -10,10 +10,11 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.userType === "student") {
-                    window.location.href = `/student/${resText.userId}`;
+                if (resText.type === "student") {
+                    window.location.href = `/student/${resText.id}`;
                 }
-                if (resText.userType === "professor") {
+
+                if (resText.type === "professor") {
                     window.location.href = `/actions`;
                 }
 
@@ -36,6 +37,10 @@
 
                     if (response.ok)
                         window.location.href = `/actions`;
+                    else {
+                        let resText = await response.json();
+                        alert(resText);
+                    }
                 };
 
                 let backButton = document.getElementById('backButton');
