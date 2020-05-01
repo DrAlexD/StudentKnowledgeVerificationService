@@ -44,6 +44,6 @@ app.use(session({
 
 app.use('/', actionsRouter);
 //app.use('/student', studentsRouter);
-//app.use('/professor', professorsRouter);
+app.use('/professor', professorsRouter);
 
 module.exports = app;

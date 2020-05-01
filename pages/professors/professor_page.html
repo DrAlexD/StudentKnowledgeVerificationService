@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Преподаватель</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 1];
+
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.type === "student") {
+                    window.location.href = `/student/${resText.id}`;
+                }
+
+                if (resText.type === "professor") {
+                    document.getElementById("deleteButton").hidden = true;
+                    if (resText.id !== locId) {
+                        document.getElementById("editButton").hidden = true;
+                        document.getElementById("logOutButton").hidden = true;
+                    }
+                }
+
+                if (resText.type === "admin") {
+                    document.getElementById("logOutButton").hidden = true;
+                }
+
+                response = await fetch(`/professor/${locId}/info.json`);
+                resText = await response.json();
+
+                document.getElementById("firstName").innerText = resText.First_name;
+                document.getElementById("secondName").innerText = resText.Second_name;
+
+                response = await fetch(`/professor/${locId}/tests/info.json`);
+
+                if (response.ok) {
+                    resText = await response.json();
+                    document.getElementById('testsTable').hidden = false;
+                    let testsButtons = document.getElementById('testsButtons');
+                    testsButtons.innerHTML = "";
+                    for (let i = 0; i < resText.length; i++) {
+                        testsButtons.innerHTML += "<tr>\n" +
+                            "                <td>\n" +
+                            `                    <input type='button' value='${resText[i].Title}'\n` +
+                            `                           onclick=""/>\n` +
+                            "                </td>\n" +
+                            "            </tr>";
+                    }
+                }
+                //onclick="window.location.href = '/student/${resText[i].studentId}/coursework/${resText[i].courseWorkId}'"/>\n` +
+                let editButton = document.getElementById('editButton');
+                editButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/edit`;
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/professors`;
+                };
+
+                let deleteButton = document.getElementById('deleteButton');
+                deleteButton.onclick = async function () {
+                    try {
+                        await fetch(`/professor/${locId}/delete`);
+                        window.location.href = `/professors`;
+                    } catch (err) {
+                        alert(err);
+                    }
+                };
+
+                let logOutButton = document.getElementById('logOutButton');
+                logOutButton.onclick = async function () {
+                    try {
+                        await fetch('/logout');
+                        window.location.href = '/login';
+                    } catch (err) {
+                        alert(err);
+                    }
+                };
+
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Преподаватель </h2>
+    <form name="professor">
+        <div style="margin-bottom: 10px">
+            <label id="firstName"></label> <label id="secondName"></label>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="testsTable" style="text-align:center; margin-bottom: 15px">
+            <thead>
+            <tr>
+                <th>Руководитель курсовых работ</th>
+            </tr>
+            </thead>
+            <tbody id="testsButtons">
+            </tbody>
+        </table>
+        <div style="margin-bottom: 10px">
+            <input id="logOutButton" type="button" value="Выйти"/>
+            <input id="editButton" type="button" value="Редактировать"/>
+            <input id="deleteButton" type="button" value="Удалить"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>
