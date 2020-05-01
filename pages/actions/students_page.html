@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Студенты</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.userType === "student") {
+                    window.location.href = `/student/${resText.userId}`;
+                }
+
+                let getAllStudents = async function () {
+                    response = await fetch(`/students/all.json`);
+                    resText = await response.json();
+                    if (response.ok) {
+                        let studentsTable = document.getElementById("students");
+                        studentsTable.innerHTML = "";
+                        for (let i = 0; i < resText.length; i++) {
+                            studentsTable.innerHTML += "<tr>\n" +
+                                `                <td>${resText[i].First_name}</td>\n` +
+                                `                <td>${resText[i].Second_name}</td>\n` +
+                                `                <td>${resText[i].Group}</td>\n` +
+                                "                <td><input type='button' value='Перейти'\n" +
+                                `                           onclick="window.location.href = '/student/${resText[i].Student_Id}'"/></td>\n` +
+                                "            </tr>";
+                        }
+                    } else {
+                        window.location.href = '/actions';
+                    }
+                };
+
+                await getAllStudents();
+
+                let inputs = document.getElementsByTagName('input');
+
+                let searchButton = document.getElementById('searchButton');
+                searchButton.onclick = async function () {
+                    let studentData = {
+                        firstName: inputs[0].value,
+                        secondName: inputs[1].value,
+                        studentGroup: inputs[2].value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(studentData)
+                    };
+
+                    response = await fetch('/students', options);
+                    resText = await response.json();
+
+                    if (response.ok) {
+                        let studentsTable = document.getElementById("students");
+                        studentsTable.innerHTML = "";
+                        for (let i = 0; i < resText.length; i++) {
+                            studentsTable.innerHTML += "<tr>\n" +
+                                `                <td>${resText[i].First_name}</td>\n` +
+                                `                <td>${resText[i].Second_name}</td>\n` +
+                                `                <td>${resText[i].Group}</td>\n` +
+                                "                <td><input type='button' value='Перейти'\n" +
+                                `                           onclick="window.location.href = '/student/${resText[i].Student_Id}'"/></td>\n` +
+                                "            </tr>";
+                        }
+                    } else
+                        alert(resText);
+                };
+
+                let allStudentsButton = document.getElementById('allStudentsButton');
+                allStudentsButton.onclick = async function () {
+                    await getAllStudents();
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/actions`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Студенты </h2>
+    <form name="students">
+        <div style="margin-bottom: 5px">
+            <label for="searchFirstName">Имя</label> <input autocomplete="off" autofocus id="searchFirstName"
+                                                            style="margin-right: 30px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
+                                                                 style="margin-right: 64px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="searchStudentGroup">Группа</label> <input autocomplete="off" id="searchStudentGroup"
+                                                                  style="margin-right: 50px" type="text"/>
+        </div>
+        <div style="margin-bottom: 10px">
+            <input id="searchButton" type="button" value="Поиск"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="allStudentsButton" type="button" value="Все студенты"/>
+        </div>
+        <table bgcolor="#f0f8ff" style="text-align:center" width="400px">
+            <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Группа</th>
+                <th>Страница</th>
+            </tr>
+            </thead>
+            <tbody id="students">
+            </tbody>
+        </table>
+    </form>
+</div>
+</body>
+</html>

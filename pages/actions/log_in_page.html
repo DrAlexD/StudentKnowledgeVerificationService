@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <script>
+        "use strict";
+        window.onload = function () {
+            let inputs = document.getElementsByTagName('input');
+
+            let logInButton = document.getElementById('logInButton');
+            logInButton.onclick = async function () {
+                try {
+                    let userData = {
+                        username: inputs[0].value,
+                        password: inputs[1].value,
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(userData)
+                    };
+
+                    let response = await fetch('/login', options);
+
+                    if (response.ok) {
+                        response = await fetch(`/session/info.json`);
+                        let resText = await response.json();
+                        if (resText.userType === "student") {
+                            window.location.href = `/student/${resText.userId}`;
+                        } else
+                            window.location.href = '/actions';
+                    } else {
+                        let resText = await response.json();
+                        alert(resText);
+                    }
+                } catch (err) {
+                    alert(err);
+                }
+            };
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Вход </h2>
+    <form name="logIn">
+        <div style="margin-bottom: 5px">
+            <label for="username">Логин</label> <input autofocus id="username" style="margin-right: 40px"
+                                                       type="text"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <label for="password">Пароль</label> <input id="password" style="margin-right: 48px" type="password"/>
+        </div>
+        <div>
+            <input id="logInButton" type="button" value="Войти"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

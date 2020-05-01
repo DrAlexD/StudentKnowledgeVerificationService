@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Действия</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.userType === "student") {
+                    window.location.href = `/student/${resText.userId}`;
+                }
+
+                if (resText.userType === "professor") {
+                    document.getElementById("addStudentPageButton").hidden = true;
+                    document.getElementById("addProfessorPageButton").hidden = true;
+                    let professorButton = document.getElementById('professorButton');
+                    professorButton.hidden = false;
+                    professorButton.onclick = function () {
+                        window.location.href = `/professor/${resText.userId}`;
+                    }
+                }
+
+                let logOutButton = document.getElementById('logOutButton');
+                logOutButton.onclick = async function () {
+                    await fetch('/logout');
+                    window.location.href = '/login';
+                };
+            } catch (err) {
+                alert(err);
+            }
+        };
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Действия </h2>
+    <form name="actions">
+        <div style="margin-bottom: 10px">
+            <input id="addStudentPageButton" onclick="window.location.href = '/add/student'" type="button"
+                   value="Добавить студента"/>
+            <input id="studentsPageButton" onclick="window.location.href = '/students'" type="button" value="Студенты"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <input id="addProfessorPageButton" onclick="window.location.href = '/add/professor'" type="button"
+                   value="Добавить преподавателя"/>
+            <input id="professorsPageButton" onclick="window.location.href = '/professors';" type="button"
+                   value="Преподаватели"/>
+        </div>
+        <div>
+            <input id="logOutButton" type="button" value="Выйти"/>
+            <input hidden id="professorButton" type="button" value="Моя страница"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

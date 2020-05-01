@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Преподаватели</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.userType === "student") {
+                    window.location.href = `/student/${resText.userId}`;
+                }
+
+                let getAllProfessors = async function () {
+                    response = await fetch(`/professors/all.json`);
+                    resText = await response.json();
+                    if (response.ok) {
+                        let professorsTable = document.getElementById("professors");
+                        professorsTable.innerHTML = "";
+                        for (let i = 0; i < resText.length; i++) {
+                            professorsTable.innerHTML += "<tr>\n" +
+                                `                <td>${resText[i].First_name}</td>\n` +
+                                `                <td>${resText[i].Second_name}</td>\n` +
+                                "                <td><input type='button' value='Перейти'\n" +
+                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_Id}'"/></td>\n` +
+                                "            </tr>";
+                        }
+                    } else {
+                        window.location.href = '/actions';
+                    }
+                };
+
+                await getAllProfessors();
+
+                let inputs = document.getElementsByTagName('input');
+
+                let searchButton = document.getElementById('searchButton');
+                searchButton.onclick = async function () {
+                    let professorData = {
+                        firstName: inputs[0].value,
+                        secondName: inputs[1].value,
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(professorData)
+                    };
+
+                    response = await fetch('/professors', options);
+                    resText = await response.json();
+
+                    if (response.ok) {
+                        let professorsTable = document.getElementById("professors");
+                        professorsTable.innerHTML = "";
+                        for (let i = 0; i < resText.length; i++) {
+                            professorsTable.innerHTML += "<tr>\n" +
+                                `                <td>${resText[i].First_name}</td>\n` +
+                                `                <td>${resText[i].Second_name}</td>\n` +
+                                "                <td><input type='button' value='Перейти'\n" +
+                                `                           onclick="window.location.href = '/student/${resText[i].Professor_Id}'"/></td>\n` +
+                                "            </tr>";
+                        }
+                    } else
+                        alert(resText);
+                };
+
+                let allProfessorsButton = document.getElementById('allProfessorsButton');
+                allProfessorsButton.onclick = async function () {
+                    await getAllProfessors();
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/actions`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Преподаватели </h2>
+    <form name="professors">
+        <div style="margin-bottom: 5px">
+            <label for="searchFirstName">Имя</label> <input autocomplete="off" autofocus id="searchFirstName"
+                                                            style="margin-right: 30px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
+                                                                 style="margin-right: 64px" type="text"/>
+        </div>
+        <div style="margin-bottom: 10px">
+            <input id="searchButton" type="button" value="Поиск"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="allProfessorsButton" type="button" value="Все преподаватели"/>
+        </div>
+        <table bgcolor="#f0f8ff" style="text-align:center" width="300px">
+            <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Страница</th>
+            </tr>
+            </thead>
+            <tbody id="professors">
+            </tbody>
+        </table>
+    </form>
+</div>
+</body>
+</html>

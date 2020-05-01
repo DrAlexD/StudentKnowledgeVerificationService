@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить студента</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.userType === "student") {
+                    window.location.href = `/student/${resText.userId}`;
+                }
+                if (resText.userType === "professor") {
+                    window.location.href = `/actions`;
+                }
+
+                let inputs = document.getElementsByTagName('input');
+
+                let addStudentButton = document.getElementById('addStudentButton');
+                addStudentButton.onclick = async function () {
+                    let studentData = {
+                        firstName: inputs[0].value,
+                        secondName: inputs[1].value,
+                        studentGroup: inputs[2].value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(studentData)
+                    };
+
+                    response = await fetch('/add/student', options);
+
+                    if (response.ok)
+                        window.location.href = `/actions`;
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/actions`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Добавить студента </h2>
+    <form name="add student">
+        <div style="margin-bottom: 5px">
+            <label for="firstName">Имя</label> <input autocomplete="off" autofocus id="firstName"
+                                                      style="margin-right: 30px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="secondName">Фамилия</label> <input autocomplete="off" id="secondName" style="margin-right: 64px"
+                                                           type="text"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <label for="studentGroup">Группа</label> <input autocomplete="off" id="studentGroup"
+                                                            style="margin-right: 50px" type="text"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="addStudentButton" type="button" value="Добавить"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>
