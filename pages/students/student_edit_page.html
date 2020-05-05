@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать страницу студента</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 2];
+
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.userType === "student") {
+                    document.getElementById("firstName").disabled = true;
+                    document.getElementById("secondName").disabled = true;
+                    document.getElementById("studentGroup").disabled = true;
+                }
+
+                if (resText.userType === "professor") {
+                    window.location.href = `/student/${locId}`;
+                }
+
+                response = await fetch(`/student/${locId}/info.json`);
+                resText = await response.json();
+
+                document.getElementById("firstName").value = resText.First_name;
+                document.getElementById("secondName").value = resText.Second_name;
+                document.getElementById("studentGroup").value = resText.Group;
+                document.getElementById("login").value = resText.Login;
+                document.getElementById("password").value = resText.Password;
+
+                let inputs = document.getElementsByTagName('input');
+
+                let backButton = document.getElementById("backButton");
+                backButton.onclick = function () {
+                    window.location.href = `/student/${locId}`;
+                };
+
+                let saveButton = document.getElementById("saveButton");
+                saveButton.onclick = async function () {
+                    let studentData = {
+                        firstName: inputs[0].value,
+                        secondName: inputs[1].value,
+                        studentGroup: inputs[2].value,
+                        login: inputs[3].value,
+                        password: inputs[4].value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(studentData)
+                    };
+
+                    response = await fetch(`/student/${locId}/edit`, options);
+
+                    if (response.ok)
+                        window.location.href = `/student/${locId}`;
+                    else {
+                        resText = await response.json();
+                        alert(resText);
+                    }
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Редактировать страницу студента </h2>
+    <form name="student edit">
+        <div style="margin-bottom: 5px">
+            <label for="firstName">Имя</label> <input autocomplete="off" autofocus id="firstName"
+                                                      style="margin-right: 30px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="secondName">Фамилия</label> <input autocomplete="off" id="secondName" style="margin-right: 64px"
+                                                           type="text"/>
+        </div>
+        <div style="margin-bottom: 10px">
+            <label for="studentGroup">Группа</label> <input autocomplete="off" id="studentGroup"
+                                                            style="margin-right: 50px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="login">Логин</label> <input autocomplete="off" id="login" style="margin-right: 40px"
+                                                    type="text"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <label for="password">Пароль</label> <input autocomplete="off" id="password" style="margin-right: 48px"
+                                                        type="password"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="saveButton" type="button" value="Сохранить"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -11,15 +11,23 @@
                 let resText = await response.json();
 
                 if (resText.type === "student") {
-                    window.location.href = `/student/${resText.id}`;
+                    document.getElementById("addStudentPageButton").hidden = true;
+                    document.getElementById("studentsPageButton").hidden = true;
+                    document.getElementById("professorsPageButton").hidden = true;
+                    document.getElementById("addProfessorPageButton").hidden = true;
+                    let myPageButton = document.getElementById('myPageButton');
+                    myPageButton.hidden = false;
+                    myPageButton.onclick = function () {
+                        window.location.href = `/student/${resText.id}`;
+                    }
                 }
 
                 if (resText.type === "professor") {
                     document.getElementById("addStudentPageButton").hidden = true;
                     document.getElementById("addProfessorPageButton").hidden = true;
-                    let professorButton = document.getElementById('professorButton');
-                    professorButton.hidden = false;
-                    professorButton.onclick = function () {
+                    let myPageButton = document.getElementById('myPageButton');
+                    myPageButton.hidden = false;
+                    myPageButton.onclick = function () {
                         window.location.href = `/professor/${resText.id}`;
                     }
                 }
@@ -53,7 +61,7 @@
         </div>
         <div>
             <input id="logOutButton" type="button" value="Выйти"/>
-            <input hidden id="professorButton" type="button" value="Моя страница"/>
+            <input hidden id="myPageButton" type="button" value="Моя страница"/>
         </div>
     </form>
 </div>
