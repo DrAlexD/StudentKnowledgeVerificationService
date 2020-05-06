@@ -91,7 +91,7 @@ actionsRouter.post('/login', (req, res) => {
             );
         }
     } else {
-        res.status(404).json("Не введены логин или пароль");
+        res.status(400).json("Не введены логин или пароль");
     }
 });
 
@@ -121,17 +121,17 @@ actionsRouter.post('/add/student', (req, res) => {
                 function (err1) {
                     if (err1) {
                         console.error(err1);
-                        res.status(500).json("Копия имеющегося студента");
+                        res.status(400).json("Копия имеющегося студента");
                     } else {
                         res.end();
                     }
                 }
             );
         } else {
-            res.status(500).json("Недопустимый логин: admin");
+            res.status(400).json("Недопустимый логин: admin");
         }
     } else {
-        res.status(404).json("Не введены имя, фамилия или группа");
+        res.status(400).json("Не введены имя, фамилия или группа");
     }
 });
 
@@ -273,7 +273,7 @@ actionsRouter.post('/students', (req, res) => {
                     }
                 );
             } else {
-                res.status(404).json("Не введены имя, фамилия или группа");
+                res.status(400).json("Не введены имя, фамилия или группа");
             }
         }
     }
@@ -296,17 +296,17 @@ actionsRouter.post('/add/professor', (req, res) => {
                 function (err1) {
                     if (err1) {
                         console.error(err1);
-                        res.status(500).json("Копия имеющегося преподавателя");
+                        res.status(400).json("Копия имеющегося преподавателя");
                     } else {
                         res.end();
                     }
                 }
             );
         } else {
-            res.status(500).json("Недопустимый логин: admin");
+            res.status(400).json("Недопустимый логин: admin");
         }
     } else {
-        res.status(404).json("Не введены имя или фамилия");
+        res.status(400).json("Не введены имя или фамилия");
     }
 });
 
@@ -385,7 +385,7 @@ actionsRouter.post('/professors', (req, res) => {
                 }
             );
         } else {
-            res.status(404).json("Не введены имя или фамилия");
+            res.status(400).json("Не введены имя или фамилия");
         }
     }
 });

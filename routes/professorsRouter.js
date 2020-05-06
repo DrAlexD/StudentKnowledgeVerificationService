@@ -85,13 +85,13 @@ professorsRouter.post('/:id/edit', (req, res) => {
     if (req.body.login !== "") {
         if (req.body.login === "admin") {
             f = false;
-            res.status(500).json("Недопустимый логин: admin");
+            res.status(400).json("Недопустимый логин: admin");
         } else {
             con.query("UPDATE professor SET Login" + `='${req.body.login}' WHERE Professor_id='${req.params.id}'`, err => {
                 if (err) {
                     console.error(err);
                     f = false;
-                    res.status(500).json("Копия имеющегося преподавателя");
+                    res.status(400).json("Копия имеющегося преподавателя");
                 }
             });
         }
@@ -160,7 +160,6 @@ professorsRouter.post('/:id/add/test', (req, res) => {
             function (err1) {
                 if (err1) {
                     console.error(err1);
-                    res.status(500).json("Копия имеющегося теста");
                 } else {
                     con.query(`SELECT * FROM test WHERE Title='${req.body.title}' AND Professor_id='${req.params.id}' AND Subject_title='${req.body.title}'`,
                         function (err2, result) {
@@ -175,7 +174,7 @@ professorsRouter.post('/:id/add/test', (req, res) => {
             }
         );
     } else {
-        res.status(404).json("Не введены название, предмет, количество вопросов или процент выполнения");
+        res.status(400).json("Не введены название, предмет, количество вопросов или процент выполнения");
     }
 });
 
@@ -275,6 +274,210 @@ professorsRouter.post('/:id/test/:code/edit', (req, res) => {
                 if (err)
                     console.error(err);
             });
+        }
+    }
+
+    setAllFiels().then(res.end());
+});
+
+professorsRouter.get('/:id/test/:code/questions/info.json', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        res.status(200).json(result);
+                    } else {
+                        res.status(404).send("Не найдены вопросы у теста преподавателя");
+                    }
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
+});
+
+professorsRouter.get('/:id/test/:code/add/question', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        res.sendFile(path.join(__dirname, '../pages/professors/add_question_page.html')); //TODO добавить
+    } else {
+        res.redirect('/login');
+    }
+});
+
+professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
+    if (req.body.text !== "") {
+        let is_has_true_answer = false;
+        let is_has_false_answer = false;
+
+        for (answer of req.body.answers) {
+            if (answer.Is_correct_answer) {
+                is_has_true_answer = true;
+            }
+            if (!answer.Is_correct_answer) {
+                is_has_false_answer = true;
+            }
+        }
+
+        if (is_has_true_answer && is_has_false_answer) {
+            con.query("INSERT INTO question (`Professor_id`, `Test_id`, `Question_text`) "
+                + `VALUES ('${req.params.id}','${req.params.code}', '${req.body.text}')`,
+                function (err1) {
+                    if (err1) {
+                        console.error(err1);
+                    } else {
+                        con.query(`SELECT * FROM question WHERE Test_id='${req.params.code}' AND Professor_id='${req.params.id}' AND Question_text='${req.body.text}'`,
+                            function (err2, result) {
+                                if (err2)
+                                    console.error(err2);
+                                else {
+                                    let setAllAnswers = async function () {
+                                        for (answer of req.body.answers) {
+                                            con.query("INSERT INTO answer (`Question_id`,`Professor_id`, `Test_id`, `Answer_text`,`Is_correct_answer`) "
+                                                + `VALUES ('${result[0].Question_id}','${req.params.id}','${req.params.code}', '${answer.text}','${answer.Is_correct_answer}')`,
+                                                function (err3) {
+                                                    if (err3)
+                                                        console.error(err3);
+                                                }
+                                            );
+                                        }
+                                    }
+
+                                    setAllAnswers().then(res.status(200).json(result[0].Question_id));
+                                }
+                            }
+                        );
+                    }
+                }
+            );
+        } else {
+            res.status(400).json("Вопрос должен содержать хотя бы один правильный и один неправильный ответы");
+        }
+    } else {
+        res.status(400).json("Не введен текст вопроса");
+    }
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined')
+                        res.sendFile(path.join(__dirname, '../pages/professors/question_page.html'));//TODO добавить
+                    else
+                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb/info.json', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        res.status(200).json(result[0]);
+                    } else {
+                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
+                    }
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb/delete', (req, res) => {
+    con.query(`DELETE FROM question WHERE Professor_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
+        if (err)
+            console.error(err);
+        else
+            res.end();
+    });
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        res.sendFile(path.join(__dirname, '../pages/professors/question_edit_page.html')); //TODO добавить
+                    } else {
+                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
+                    }
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
+});
+
+professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
+    let setAllFiels = async function () {
+        if (req.body.text !== "") {
+            con.query("UPDATE question SET Question_text" + `='${req.body.text}'` +
+                ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
+                if (err)
+                    console.error(err);
+            });
+        }
+
+        if (req.body.answers !== "") {
+            let is_has_true_answer = false;
+            let is_has_false_answer = false;
+
+            for (answer of req.body.answers) {
+                if (answer.Is_correct_answer) {
+                    is_has_true_answer = true;
+                }
+                if (!answer.Is_correct_answer) {
+                    is_has_false_answer = true;
+                }
+            }
+
+            if (is_has_true_answer && is_has_false_answer) {
+                for (answer of req.body.answers) {
+
+                    if (answer.text !== "") {
+                        con.query("UPDATE answer SET Answer_text" + `='${answer.text}' WHERE Professor_id='${req.params.id}'` +
+                            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb} AND Answer_id='${answer.id}''`,
+                            function (err) {
+                                if (err)
+                                    console.error(err);
+                            }
+                        );
+                    }
+
+                    con.query("UPDATE answer SET Is_correct_answer" + `='${answer.Is_correct_answer}' WHERE Professor_id='${req.params.id}'` +
+                        `AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
+                        function (err) {
+                            if (err)
+                                console.error(err);
+                        }
+                    );
+                }
+            }
         }
     }
 

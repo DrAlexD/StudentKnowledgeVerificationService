@@ -85,13 +85,13 @@ studentsRouter.post('/:id/edit', (req, res) => {
     if (req.body.login !== "") {
         if (req.body.login === "admin") {
             f = false;
-            res.status(500).json("Недопустимый логин: admin");
+            res.status(400).json("Недопустимый логин: admin");
         } else {
             con.query("UPDATE student SET Login" + `='${req.body.login}' WHERE Student_id='${req.params.id}'`, err => {
                 if (err) {
                     console.error(err);
                     f = false;
-                    res.status(500).json("Копия имеющегося студента");
+                    res.status(400).json("Копия имеющегося студента");
                 }
             });
         }
@@ -208,14 +208,14 @@ studentsRouter.post('/:id/add/test', (req, res) => {
             function (err1) {
                 if (err1) {
                     console.error(err1);
-                    res.status(500).json("Копия имеющегося теста у студента");
+                    res.status(400).json("Копия имеющегося теста у студента");
                 } else {
                     res.end();
                 }
             }
         );
     } else {
-        res.status(404).json("Не введено количество вопросов в тесте");
+        res.status(400).json("Не введено количество вопросов в тесте");
     }
 });
 
@@ -227,6 +227,6 @@ studentsRouter.get('/:id/test/:code/:attempt/delete', (req, res) => {
         else
             res.end();
     });
-});
+}); //TODO решить насчет удаления попытки решения теста у студента
 
 module.exports = studentsRouter;
