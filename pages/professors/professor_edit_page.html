@@ -14,10 +14,13 @@
                 let resText = await response.json();
 
                 if (resText.type === "student") {
-                    window.location.href = `/student/${resText.id}`;
+                    window.location.href = `/professor/${locId}`;
                 }
 
                 if (resText.type === "professor") {
+                    if (resText.id !== locId) {
+                        window.location.href = `/professor/${locId}`;
+                    }
                     document.getElementById("firstName").disabled = true;
                     document.getElementById("secondName").disabled = true;
                 }

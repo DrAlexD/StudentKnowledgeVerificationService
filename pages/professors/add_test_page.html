@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить тест</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 3];
+
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.type === "student") {
+                    window.location.href = `/professor/${locId}`;
+                }
+
+                if (resText.type === "professor" && resText.id !== locId) {
+                    window.location.href = `/professor/${resText.id}/add/test`;
+                }
+
+                let inputs = document.getElementsByTagName('input');
+
+                let addTestButton = document.getElementById('addTestButton');
+                addTestButton.onclick = async function () {
+                    let testData = {
+                        title: inputs[0].value,
+                        subject: inputs[1].value,
+                        percent: inputs[2].value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(testData)
+                    };
+
+                    response = await fetch(`/professor/${locId}/add/test`, options);
+                    resText = await response.json();
+
+                    if (response.ok)
+                        window.location.href = `/professor/${locId}/test/${resText.Test_id}`;
+                    else
+                        alert(resText);
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/professor/${locId}`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px;">
+    <h2> Добавить тест </h2>
+    <form name="add test">
+        <div style="margin-bottom: 5px">
+            <label for="title">Название</label> <input autocomplete="off" autofocus id="title"
+                                                       style="margin-right: 100px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="subject">Предмет</label> <input autocomplete="off" id="subject" style="margin-right: 50px" type="number"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <label for="percent">Процент успешного выполнения</label> <input autocomplete="off" id="percent"
+                                                                            style="margin-right: 20px" type="text"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="addTestButton" type="button" value="Добавить"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

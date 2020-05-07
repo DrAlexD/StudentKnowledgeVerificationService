@@ -13,13 +13,16 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.userType === "student") {
+                if (resText.type === "student") {
+                    if (resText.id !== locId) {
+                        window.location.href = `/student/${resText.id}`;
+                    }
                     document.getElementById("firstName").disabled = true;
                     document.getElementById("secondName").disabled = true;
                     document.getElementById("studentGroup").disabled = true;
                 }
 
-                if (resText.userType === "professor") {
+                if (resText.type === "professor") {
                     window.location.href = `/student/${locId}`;
                 }
 

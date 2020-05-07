@@ -11,27 +11,27 @@
                 let locId = loc[loc.length - 1];
 
                 let response = await fetch(`/session/info.json`);
-                let resText = await response.json();
+                let resTextSession = await response.json();
 
-                if (resText.type === "student") {
-                    document.getElementById("backButton").hidden = true;
+                if (resTextSession.type === "student") {
+                    if (resTextSession.id !== locId) {
+                        window.location.href = `/student/${resTextSession.id}`;
+                    }
                     document.getElementById("deleteButton").hidden = true;
-                    document.getElementById("addTestButton").hidden = true;
                 }
 
-                if (resText.type === "professor") {
-                    document.getElementById("addTestButton").hidden = true;
+                if (resTextSession.type === "professor") {
                     document.getElementById("deleteButton").hidden = true;
                     document.getElementById("editButton").hidden = true;
                     document.getElementById("logOutButton").hidden = true;
                 }
 
-                if (resText.type === "admin") {
+                if (resTextSession.type === "admin") {
                     document.getElementById("logOutButton").hidden = true;
                 }
 
                 response = await fetch(`/student/${locId}/info.json`);
-                resText = await response.json();
+                let resText = await response.json();
 
                 document.getElementById("firstName").innerText = resText.First_name;
                 document.getElementById("secondName").innerText = resText.Second_name;
@@ -41,16 +41,67 @@
 
                 if (response.ok) {
                     resText = await response.json();
-                    document.getElementById('testsTable').hidden = false;
-                    let testsButtons = document.getElementById('testsButtons');
-                    testsButtons.innerHTML = "";
+                    let f1 = true;
+                    let f2 = true;
+                    let solvedTestsLines = document.getElementById('solvedTestsLines');
+                    let testsLines = document.getElementById('testsLines');
                     for (let i = 0; i < resText.length; i++) {
-                        testsButtons.innerHTML += "<tr>\n" +
-                            "                <td>\n" +
-                            `                    <input type='button' value='${resText[i].Title}${(resText[i].Attempt_number > 1) ? ": " + resText[i].Attempt_number + " попытка" : ""}'\n` +
-                            `                           onclick="window.location.href = '/student/${locId}/test/${resText[i].Test_id}/${resText[i].Attempt_number}'"/>\n` +
-                            "                </td>\n" +
-                            "            </tr>";
+                        let response2 = await fetch(`/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}/info.json`);
+                        let resText2 = await response2.json();
+                        let response3 = await fetch(`/professor/${resText[i].Created_by_id}/info.json`);
+                        let resText3 = await response3.json();
+
+                        let created_by;
+                        if (resText[i].Created_by_id === 0) {
+                            if (resTextSession.type === "student")
+                                created_by = "Мной";
+                            else
+                                created_by = "Студентом";
+                        } else {
+                            if (resTextSession.type === "student")
+                                created_by = resText3.First_name + " " + resText3.Second_name;
+                            else {
+                                if (resTextSession.id === resText[i].Created_by_id)
+                                    created_by = "Мной";
+                            }
+                        }
+                        if (resText[i].Number_of_correct_answers !== "") {
+                            if (f1) {
+                                document.getElementById('solvedTestsTable').hidden = false;
+                                solvedTestsLines.innerHTML = "";
+                                f1 = false;
+                            }
+                            let solved;
+                            if ((resText[i].Number_of_correct_answers / resText[i].Number_of_questions_in_test) * 100 >= resText2.Percentage_for_test_passing) {
+                                solved = "Пройден";
+                            } else {
+                                solved = "Не пройден";
+                            }
+                            solvedTestsLines.innerHTML += "<tr>\n" +
+                                `                <td>${resText2.Subject_title}</td>\n` +
+                                "                <td>\n" +
+                                `                    <input type='button' value='${resText2.Title}${(resText[i].Attempt_number > 1) ? ": " + resText[i].Attempt_number + " попытка" : ""}'\n` +
+                                `                           onclick="window.location.href = '/student/${locId}/test/${resText[i].Test_id}/${resText[i].Attempt_number}'"/>\n` +
+                                "                </td>\n" +
+                                `                <td>${created_by}</td>\n` +
+                                `                <td>${resText[i].Number_of_correct_answers}/${resText[i].Number_of_questions_in_test}</td>\n` +
+                                `                <td>${solved}</td>\n` +
+                                "            </tr>";
+                        } else {
+                            if (f2) {
+                                document.getElementById('testsTable').hidden = false;
+                                testsLines.innerHTML = "";
+                                f2 = false;
+                            }
+                            testsLines.innerHTML += "<tr>\n" +
+                                `                <td>${resText2.Subject_title}</td>\n` +
+                                "                <td>\n" +
+                                `                    <input type='button' value='${resText2.Title}${(resText[i].Attempt_number > 1) ? ": " + resText[i].Attempt_number + " попытка" : ""}'\n` +
+                                `                           onclick="window.location.href = '/student/${locId}/test/${resText[i].Test_id}/${resText[i].Attempt_number}'"/>\n` +
+                                "                </td>\n" +
+                                `                <td>${created_by}</td>\n` +
+                                "            </tr>";
+                        }
                     }
                 }
 
@@ -66,7 +117,7 @@
 
                 let backButton = document.getElementById('backButton');
                 backButton.onclick = function () {
-                    window.location.href = `/students`;
+                    window.location.href = `/actions`;
                 };
 
                 let deleteButton = document.getElementById('deleteButton');
@@ -105,17 +156,32 @@
         <div style="margin-bottom: 10px">
             <label id="group"></label>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="testsTable" style="text-align:center; margin-bottom: 5px">
+        <table bgcolor="#f0f8ff" hidden id="solvedTestsTable" style="text-align:center; margin-bottom: 10px">
             <thead>
             <tr>
-                <th>Курсовые работы</th>
+                <th>Предмет</th>
+                <th>Тест</th>
+                <th>Назначен</th>
+                <th>Верных ответов</th>
+                <th>Результат</th>
             </tr>
             </thead>
-            <tbody id="testsButtons">
+            <tbody id="solvedTestsLines">
             </tbody>
         </table>
-        <div style="margin-bottom: 15px">
-            <input id="addTestButton" type="button" value="Добавить курсовую работу"/>
+        <table bgcolor="#f0f8ff" hidden id="testsTable" style="text-align:center; margin-bottom: 15px">
+            <thead>
+            <tr>
+                <th>Предмет</th>
+                <th>Тест</th>
+                <th>Назначен</th>
+            </tr>
+            </thead>
+            <tbody id="testsLines">
+            </tbody>
+        </table>
+        <div style="margin-bottom: 5px">
+            <input id="addTestButton" type="button" value="Добавить тест"/>
         </div>
         <div style="margin-bottom: 10px">
             <input id="logOutButton" type="button" value="Выйти"/>

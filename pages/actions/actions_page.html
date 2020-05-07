@@ -13,8 +13,8 @@
                 if (resText.type === "student") {
                     document.getElementById("addStudentPageButton").hidden = true;
                     document.getElementById("studentsPageButton").hidden = true;
-                    document.getElementById("professorsPageButton").hidden = true;
                     document.getElementById("addProfessorPageButton").hidden = true;
+                    document.getElementById("addTestPageButton").hidden = true;
                     let myPageButton = document.getElementById('myPageButton');
                     myPageButton.hidden = false;
                     myPageButton.onclick = function () {
@@ -31,6 +31,11 @@
                         window.location.href = `/professor/${resText.id}`;
                     }
                 }
+
+                let addTestButton = document.getElementById('addTestPageButton');
+                addTestButton.onclick = function () {
+                    window.location.href = `/professor/${resText.id}/add/test`;
+                };
 
                 let logOutButton = document.getElementById('logOutButton');
                 logOutButton.onclick = async function () {
@@ -58,6 +63,12 @@
                    value="Добавить преподавателя"/>
             <input id="professorsPageButton" onclick="window.location.href = '/professors';" type="button"
                    value="Преподаватели"/>
+        </div>
+        <div style="margin-bottom: 15px">
+            <input id="addTestPageButton" onclick="window.location.href = '/add/professor'" type="button"
+                   value="Добавить тест"/>
+            <input id="testsPageButton" onclick="window.location.href = '/tests';" type="button"
+                   value="Тесты"/>
         </div>
         <div>
             <input id="logOutButton" type="button" value="Выйти"/>

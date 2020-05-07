@@ -51,7 +51,7 @@ actionsRouter.post('/login', (req, res) => {
                 console.log("Success log in: admin");
                 res.end();
             } else {
-                res.status(404).json("Неправильный пароль для пользователя: admin");
+                res.status(400).json("Неправильный пароль для пользователя: admin");
             }
         } else {
             con.query(`SELECT * FROM student WHERE Login='${req.body.username}' AND Password='${req.body.password}'`,
@@ -80,7 +80,7 @@ actionsRouter.post('/login', (req, res) => {
                                             console.log(`Success log in: ${result2[0].Login}`);
                                             res.end();
                                         } else {
-                                            res.status(404).json("Неправильный логин или пароль");
+                                            res.status(400).json("Неправильный логин или пароль");
                                         }
                                     }
                                 }
@@ -660,7 +660,7 @@ actionsRouter.post('/tests', (req, res) => {
                         }
                     );
                 } else {
-                    res.status(404).json("Не введены имя, фамилия, название или предмет");
+                    res.status(400).json("Не введены имя, фамилия, название или предмет");
                 }
             }
         }

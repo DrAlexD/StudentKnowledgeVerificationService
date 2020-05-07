@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 3];
+                let locCode = loc[loc.length - 1];
+
+                let response = await fetch(`/session/info.json`);
+                let resTextSession = await response.json();
+
+                if (resTextSession.type === "student") {
+                    document.getElementById("questionsTable").hidden = true;
+                    document.getElementById("addQuestionButton").hidden = true;
+                    document.getElementById("deleteButton").hidden = true;
+                    document.getElementById("editButton").hidden = true;
+                }
+
+                if (resTextSession.type === "professor" && locId !== resTextSession.id) {
+                    document.getElementById("addQuestionButton").hidden = true;
+                    document.getElementById("deleteButton").hidden = true;
+                    document.getElementById("editButton").hidden = true;
+                }
+
+                response = await fetch(`/professor/${locId}/test/${locCode}/info.json`);
+                let resText = await response.json();
+
+                document.getElementById("title").innerText = resText.Title;
+                document.getElementById("subject").innerText = resText.Subject_title;
+                document.getElementById("percent").innerText = resText.Percentage_for_test_passing;
+                document.getElementById("number_of_questions").innerText = resText.Total_number_of_questions;
+
+                response = await fetch(`/professor/${locId}/test/${locCode}/questions/info.json`);
+
+                if (response.ok) {
+                    resText = await response.json();
+                    document.getElementById('questionsTable').hidden = false;
+                    let questionsButtons = document.getElementById('questions');
+                    questionsButtons.innerHTML = "";
+                    for (let i = 0; i < resText.length; i++) {
+                        questionsButtons.innerHTML += "<tr>\n" +
+                            "                <td>\n" +
+                            `                    <input type='button' value='${resText[i].Question_text}'\n` +
+                            `                           onclick="window.location.href = '/professor/${locId}/test/${locCode}/question/${resText[i].Question_id}'"/>\n` +
+                            "                </td>\n" +
+                            "            </tr>";
+                    }
+                }
+
+                let addQuestionButton = document.getElementById('addQuestionButton');
+                addQuestionButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/test/${locCode}/add/question`;
+                };
+
+                let solveTestButton = document.getElementById('solveTestButton');
+                if (resTextSession.type === "student")
+                    solveTestButton.value = "Решить";
+                else
+                    solveTestButton.value = "Назначить";
+                solveTestButton.onclick = function () {
+                    if (resTextSession.type === "student") {
+                        //TODO добавить POST-запрос на добавление теста к студенту (скопировать из add_student_test_page.html или add_test_page.html)
+                    } else
+                        window.location.href = `/add/test/${locCode}`; //TODO добавить в actionsRouter
+                };
+
+                let editButton = document.getElementById('editButton');
+                editButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/test/${locCode}/edit`;
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/professor/${locId}`;
+                };
+
+                let deleteButton = document.getElementById('deleteButton');
+                deleteButton.onclick = async function () {
+                    try {
+                        await fetch(`/professor/${locId}/test/${locCode}/delete`);
+                        window.location.href = `/professor/${locId}`;
+                    } catch (err) {
+                        alert(err);
+                    }
+                };
+            } catch
+                (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Тест </h2>
+    <form name="test">
+        <div style="margin-bottom: 5px">
+            <label>Название:</label> <label id="title"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Предмет:</label> <label id="subject"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Количество вопросов в тесте: </label><label id="number_of_questions"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Процент успешного выполнения:</label> <label id="percent"></label>
+        </div>
+        <div style="margin-bottom: 10px">
+            <input id="solveTestButton" type="button"/>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="questionsTable" style="text-align:center; margin-bottom: 5px">
+            <thead>
+            <tr>
+                <th>Вопросы</th>
+            </tr>
+            </thead>
+            <tbody id="questions">
+            </tbody>
+        </table>
+        <div style="margin-bottom: 15px">
+            <input id="addQuestionButton" type="button" value="Добавить вопрос"/>
+        </div>
+        <div style="margin-bottom: 10px">
+            <input id="editButton" type="button" value="Редактировать"/>
+            <input id="deleteButton" type="button" value="Удалить"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

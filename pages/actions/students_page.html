@@ -23,11 +23,9 @@
                         studentsTable.innerHTML = "";
                         for (let i = 0; i < resText.length; i++) {
                             studentsTable.innerHTML += "<tr>\n" +
-                                `                <td>${resText[i].First_name}</td>\n` +
-                                `                <td>${resText[i].Second_name}</td>\n` +
-                                `                <td>${resText[i].Group}</td>\n` +
-                                "                <td><input type='button' value='Перейти'\n" +
+                                `                <td><input type='button' value='${resText[i].First_name} ${resText[i].Second_name}'\n` +
                                 `                           onclick="window.location.href = '/student/${resText[i].Student_id}'"/></td>\n` +
+                                `                <td>${resText[i].Group}</td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -60,11 +58,9 @@
                         studentsTable.innerHTML = "";
                         for (let i = 0; i < resText.length; i++) {
                             studentsTable.innerHTML += "<tr>\n" +
-                                `                <td>${resText[i].First_name}</td>\n` +
-                                `                <td>${resText[i].Second_name}</td>\n` +
-                                `                <td>${resText[i].Group}</td>\n` +
-                                "                <td><input type='button' value='Перейти'\n" +
+                                `                <td><input type='button' value='${resText[i].First_name} ${resText[i].Second_name}'\n` +
                                 `                           onclick="window.location.href = '/student/${resText[i].Student_id}'"/></td>\n` +
+                                `                <td>${resText[i].Group}</td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -113,10 +109,8 @@
         <table bgcolor="#f0f8ff" style="text-align:center" width="400px">
             <thead>
             <tr>
-                <th>Имя</th>
-                <th>Фамилия</th>
+                <th>Студент</th>
                 <th>Группа</th>
-                <th>Страница</th>
             </tr>
             </thead>
             <tbody id="students">

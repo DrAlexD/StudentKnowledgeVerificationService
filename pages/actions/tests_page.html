@@ -7,8 +7,8 @@
         "use strict";
         window.onload = async function () {
             try {
-                let response = await fetch(`/session/info.json`);
-                let resText = await response.json();
+                let response;
+                let resText;
 
                 let getAllTests = async function () {
                     response = await fetch(`/tests/all.json`);
@@ -17,16 +17,17 @@
                     if (response.ok) {
                         let testsTable = document.getElementById("tests");
                         testsTable.innerHTML = "";
+
                         for (let i = 0; i < resText.length; i++) {
                             let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
                             let resText2 = await response2.json();
                             testsTable.innerHTML += "<tr>\n" +
-                                `                <td>${resText2[i].First_name}</td>\n` +
-                                `                <td>${resText2[i].Second_name}</td>\n` +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
-                                `                <td>${resText[i].Title}</td>\n` +
-                                "                <td><input type='button' value='Перейти'\n" +
+                                `                <td><input type='button' value='${resText[i].Title}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText.Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
+                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td>${resText[i].Total_number_of_questions}</td>\n` +
+                                `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -58,16 +59,17 @@
                     if (response.ok) {
                         let testsTable = document.getElementById("tests");
                         testsTable.innerHTML = "";
+
                         for (let i = 0; i < resText.length; i++) {
                             let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
                             let resText2 = await response2.json();
                             testsTable.innerHTML += "<tr>\n" +
-                                `                <td>${resText2[i].First_name}</td>\n` +
-                                `                <td>${resText2[i].Second_name}</td>\n` +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
-                                `                <td>${resText[i].Title}</td>\n` +
-                                "                <td><input type='button' value='Перейти'\n" +
-                                `                           onclick="window.location.href = '/professor/${resText.Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
+                                `                <td><input type='button' value='${resText[i].Title}'\n` +
+                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
+                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td>${resText[i].Total_number_of_questions}</td>\n` +
+                                `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -120,11 +122,11 @@
         <table bgcolor="#f0f8ff" style="text-align:center" width="500px">
             <thead>
             <tr>
-                <th>Имя</th>
-                <th>Фамилия</th>
                 <th>Предмет</th>
-                <th>Название</th>
-                <th>Страница</th>
+                <th>Тест</th>
+                <th>Создатель</th>
+                <th>Всего вопросов</th>
+                <th>Процент прохождения</th>
             </tr>
             </thead>
             <tbody id="tests">
