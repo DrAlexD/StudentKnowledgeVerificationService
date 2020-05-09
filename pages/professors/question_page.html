@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Вопрос</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 5];
+                let locCode = loc[loc.length - 3];
+                let locNumb = loc[loc.length - 1];
+
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.type === "student") {
+                    window.location.href = `/professor/${locId}/test/${locCode}`;
+                }
+
+                if (resText.type === "professor" && resText.id !== locId) {
+                    document.getElementById("editButton").hidden = true;
+                    document.getElementById("deleteButton").hidden = true;
+                }
+
+                response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/info.json`);
+                resText = await response.json();
+
+                document.getElementById("questionText").innerText = resText.Question_text;
+
+                response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/answers/info.json`);
+
+                if (response.ok) {
+                    resText = await response.json();
+                    document.getElementById('answersTable').hidden = false;
+                    let answersLines = document.getElementById('answersLines');
+                    answersLines.innerHTML = "";
+                    for (let i = 0; i < resText.length; i++) {
+                        let is_correct = resText[i].Is_correct_answer ? "true" : "false";
+                        answersLines.innerHTML += `<tr aria-checked='${is_correct}'>\n` +
+                            `                <td>${resText[i].Answer_text}</td>\n` +
+                            "            </tr>";
+                    }
+                }
+
+                let editButton = document.getElementById('editButton');
+                editButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/test/${locCode}/question/${locNumb}/edit`;
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/test/${locCode}`;
+                };
+
+                let deleteButton = document.getElementById('deleteButton');
+                deleteButton.onclick = async function () {
+                    try {
+                        await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/delete`);
+                        window.location.href = `/professor/${locId}/test/${locCode}`;
+                    } catch (err) {
+                        alert(err);
+                    }
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Вопрос </h2>
+    <form name="question">
+        <div style="margin-bottom: 10px">
+            <label id="questionText"></label>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 15px">
+            <thead>
+            <tr>
+                <th>Ответ</th>
+            </tr>
+            </thead>
+            <tbody id="answersLines">
+            </tbody>
+        </table>
+        <div style="margin-bottom: 10px">
+            <input id="editButton" type="button" value="Редактировать"/>
+            <input id="deleteButton" type="button" value="Удалить"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

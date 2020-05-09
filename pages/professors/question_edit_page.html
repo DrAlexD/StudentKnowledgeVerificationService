@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать вопрос</title>
+    <script>
+        "use strict";
+
+        let number_of_answers;
+        let locId;
+        let locCode;
+        let locNumb;
+        let answers_ids = [];
+
+        let deleteAnswer = async function (answer_id) {
+            try {
+                await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/answer/${answer_id}/delete`);
+                let ell = this.closest("tr");
+                ell.parentElement.removeChild(ell);
+                answers_ids.splice(answers_ids.indexOf(answer_id, 0), 1);
+                number_of_answers--;
+            } catch (err) {
+                alert(err);
+            }
+        }
+
+        let deleteLine = async function () {
+            let ell = this.closest("tr");
+            ell.parentElement.removeChild(ell);
+            number_of_answers--;
+        }
+
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                locId = loc[loc.length - 5];
+                locCode = loc[loc.length - 3];
+                locNumb = loc[loc.length - 1];
+
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.type === "student" || (resText.type === "professor" && locId !== resText.id)) {
+                    window.location.href = `/professor/${locId}/test/${locCode}`;
+                }
+
+                response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/info.json`);
+                resText = await response.json();
+
+                document.getElementById("questionText").value = resText.Question_text;
+                let qt = resText.Question_text;
+
+                response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/answers/info.json`);
+
+                number_of_answers = 0;
+                if (response.ok) {
+                    resText = await response.json();
+                    number_of_answers = resText.length;
+                    document.getElementById('answersTable').hidden = false;
+                    let answersButtons = document.getElementById('answers');
+                    answersButtons.innerHTML = "";
+                    for (let i = 0; i < resText.length; i++) {
+                        answers_ids.push(resText[i].Answer_id);
+                        let is_correct = resText[i].Is_correct_answer ? "checked" : "";
+                        answersButtons.innerHTML += "<tr>\n" +
+                            "                <td>\n" +
+                            `                    <input autocomplete="off" id="is_correct_answer" ${is_correct} style="margin-right: 35px" type="checkbox"/>` +
+                            "                </td>\n" +
+                            "                <td>\n" +
+                            `                    <input autocomplete="off" id="answer_text" value='${resText[i].Answer_text}' style="margin-right: 35px" type="text"/>` +
+                            "                </td>\n" +
+                            "                <td><input type='button' value='Удалить'\n" +
+                            `                           onclick="deleteAnswer(${resText[i].Answer_id})"/></td>\n` +
+                            "            </tr>";
+                    }
+                }
+
+                let addAnswerButton = document.getElementById('addAnswerButton');
+                addAnswerButton.onclick = async function () {
+                    let answersButtons = document.getElementById('answers');
+                    if (number_of_answers === 0) {
+                        document.getElementById('answersTable').hidden = false;
+                        answersButtons.innerHTML = "";
+                    }
+                    answersButtons.innerHTML += "<tr>\n" +
+                        "                <td>\n" +
+                        `                    <input autocomplete="off" id="is_correct_answer" style="margin-right: 35px" type="checkbox"/>` +
+                        "                </td>\n" +
+                        "                <td>\n" +
+                        `                    <input autocomplete="off" id="answer_text" style="margin-right: 35px" type="text"/>` +
+                        "                </td>\n" +
+                        "                <td><input type='button' value='Удалить'\n" +
+                        `                           onclick="deleteLine()"/></td>\n` +
+                        "            </tr>";
+                    number_of_answers++;
+                };
+
+                let inputs = document.getElementsByTagName('input');
+                let saveButton = document.getElementById('saveButton');
+                saveButton.onclick = async function () {
+                    let addNewAnswers = async function () {
+                        if (number_of_answers > answers_ids.length) {
+                            for (let i = 1; i < 1 + 2 * (number_of_answers - answers_ids.length); i += 2) {
+                                let answerData = {
+                                    is_correct_answer: inputs[i].checked,
+                                    text: inputs[i + 1].value,
+                                };
+
+                                let options = {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify(answerData)
+                                };
+
+                                response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/add/answer`, options);
+
+                                if (!response.ok) {
+                                    resText = await response.json();
+                                    alert(resText);
+                                }
+                            }
+                        }
+                    }
+
+                    await addNewAnswers();
+
+                    let setAnswers = async function () {
+                        let answers = [];
+                        let answer = {};
+                        for (let i = 1 + (number_of_answers - answers_ids.length) * 2, j = 0; i < inputs.length; i++) {
+                            if (i % 2 === 1)
+                                answer["is_correct_answer"] = inputs[i].checked;
+                            else {
+                                answer["text"] = inputs[i].value;
+                                answer["id"] = answers_ids[j];
+                                j++;
+                                answers.push(answer);
+                            }
+                        }
+                        return answers;
+                    }
+
+                    let questionData = {
+                        text: inputs[0].value === qt ? "" : inputs[0].value,
+                        answers: setAnswers()
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(questionData)
+                    };
+
+                    response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/edit`, options);
+
+                    if (response.ok)
+                        window.location.href = `/professor/${locId}/test/${locCode}/question/${locNumb}`;
+                };
+
+                let backButton = document.getElementById("backButton");
+                backButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/test/${locCode}/question/${locNumb}`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Редактировать вопрос </h2>
+    <form name="edit question">
+        <div style="margin-bottom: 5px">
+            <label for="questionText">Текст вопроса</label> <input autocomplete="off" id="questionText"
+                                                                   style="margin-right: 200px"
+                                                                   type="text"/>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 5px" width="300px">
+            <thead>
+            <tr>
+                <th>Верный ответ?</th>
+                <th>Текст ответа</th>
+                <th>Удалить ответ</th>
+            </tr>
+            </thead>
+            <tbody id="answers">
+            </tbody>
+        </table>
+        <div style="margin-bottom: 15px">
+            <input id="addAnswerButton" type="button" value="Добавить ответ"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="saveButton" type="button" value="Добавить"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

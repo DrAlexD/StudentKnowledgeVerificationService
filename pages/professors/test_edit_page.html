@@ -14,11 +14,7 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.type === "student") {
-                    window.location.href = `/professor/${locId}/test/${locCode}`;
-                }
-
-                if (resText.type === "professor" && resText.id !== locId) {
+                if (resText.type === "student" || (resText.type === "professor" && locId !== resText.id)) {
                     window.location.href = `/professor/${locId}/test/${locCode}`;
                 }
 

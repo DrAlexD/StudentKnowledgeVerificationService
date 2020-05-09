@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить вопрос</title>
+    <script>
+        "use strict";
+
+        let number_of_answers;
+        let deleteAnswer = async function () {
+            let ell = this.closest("tr");
+            ell.parentElement.removeChild(ell);
+            number_of_answers--;
+        }
+
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 5];
+                let locCode = loc[loc.length - 3];
+
+                let response = await fetch(`/session/info.json`);
+                let resText = await response.json();
+
+                if (resText.type === "student" || (resText.type === "professor" && locId !== resText.id)) {
+                    window.location.href = `/professor/${locId}/test/${locCode}`;
+                }
+
+                number_of_answers = 0;
+                let addAnswerButton = document.getElementById('addAnswerButton');
+                addAnswerButton.onclick = async function () {
+                    let answersButtons = document.getElementById('answers');
+                    if (number_of_answers === 0) {
+                        document.getElementById('answersTable').hidden = false;
+                        answersButtons.innerHTML = "";
+                    }
+                    answersButtons.innerHTML += "<tr>\n" +
+                        "                <td>\n" +
+                        `                    <input autocomplete="off" id="is_correct_answer" style="margin-right: 35px" type="checkbox"/>` +
+                        "                </td>\n" +
+                        "                <td>\n" +
+                        `                    <input autocomplete="off" id="answer_text" style="margin-right: 35px" type="text"/>` +
+                        "                </td>\n" +
+                        "                <td><input type='button' value='Удалить'\n" +
+                        `                           onclick="deleteAnswer()"/></td>\n` +
+                        "            </tr>";
+                    number_of_answers++;
+                };
+
+                let inputs = document.getElementsByTagName('input');
+
+                let addQuestionButton = document.getElementById('addQuestionButton');
+                addQuestionButton.onclick = async function () {
+                    let setAnswers = async function () {
+                        let answers = [];
+                        let answer = {};
+                        for (let i = 1; i < inputs.length; i++) {
+                            if (i % 2 === 1)
+                                answer["is_correct_answer"] = inputs[i].checked;
+                            else {
+                                answer["text"] = inputs[i].value;
+                                answers.push(answer);
+                            }
+                        }
+                        return answers;
+                    }
+
+                    let questionData = {
+                        text: inputs[0].value,
+                        answers: setAnswers()
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(questionData)
+                    };
+
+                    response = await fetch(`/professor/${locId}/test/${locCode}/add/question`, options);
+
+                    if (response.ok) {
+                        resText = await response.json();
+                        window.location.href = `/professor/${locId}/test/${locCode}/question/${resText.Question_id}`;
+                    } else {
+                        resText = await response.json();
+                        alert(resText);
+                    }
+                };
+
+                let backButton = document.getElementById("backButton");
+                backButton.onclick = function () {
+                    window.location.href = `/professor/${locId}/test/${locCode}`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Добавить вопрос </h2>
+    <form name="add question">
+        <div style="margin-bottom: 5px">
+            <label for="text">Текст вопроса</label> <input autocomplete="off" id="text" style="margin-right: 200px"
+                                                           type="text"/>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 5px" width="300px">
+            <thead>
+            <tr>
+                <th>Верный ответ?</th>
+                <th>Текст ответа</th>
+                <th>Удалить ответ</th>
+            </tr>
+            </thead>
+            <tbody id="answers">
+            </tbody>
+        </table>
+        <div style="margin-bottom: 15px">
+            <input id="addAnswerButton" type="button" value="Добавить ответ"/>
+        </div>
+        <div>
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="addQuestionButton" type="button" value="Добавить"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

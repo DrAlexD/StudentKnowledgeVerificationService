@@ -147,16 +147,16 @@ professorsRouter.get('/:id/tests/info.json', (req, res) => {
 
 professorsRouter.get('/:id/add/test', (req, res) => {
     if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/professors/add_test_page.html')); //TODO добавить
+        res.sendFile(path.join(__dirname, '../pages/professors/add_test_page.html'));
     } else {
         res.redirect('/login');
     }
 });
 
 professorsRouter.post('/:id/add/test', (req, res) => {
-    if (req.body.title !== "" && req.body.subject !== "" && req.body.number !== "" && req.body.percent !== "") {
+    if (req.body.title !== "" && req.body.subject !== "" && req.body.percent !== "") {
         con.query("INSERT INTO test (`Professor_id`, `Title`, `Subject_title`, `Total_number_of_questions`, `Percentage_for_test_passing`) "
-            + `VALUES ('${req.params.id}','${req.body.title}', '${req.body.subject}', '${req.body.number}', '${req.body.percent}')`,
+            + `VALUES ('${req.params.id}','${req.body.title}', '${req.body.subject}', '0', '${req.body.percent}')`,
             function (err1) {
                 if (err1) {
                     console.error(err1);
@@ -166,7 +166,7 @@ professorsRouter.post('/:id/add/test', (req, res) => {
                             if (err2)
                                 console.error(err2);
                             else {
-                                res.status(200).json(result[0].Test_id);
+                                res.status(200).json(result[0]);
                             }
                         }
                     );
@@ -186,7 +186,7 @@ professorsRouter.get('/:id/test/:code', (req, res) => {
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/professors/test_page.html'));//TODO добавить
+                        res.sendFile(path.join(__dirname, '../pages/professors/test_page.html'));
                     else
                         res.redirect(`/professor/${req.params.id}`);
                 }
@@ -234,7 +234,7 @@ professorsRouter.get('/:id/test/:code/edit', (req, res) => {
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined') {
-                        res.sendFile(path.join(__dirname, '../pages/professors/test_edit_page.html')); //TODO добавить
+                        res.sendFile(path.join(__dirname, '../pages/professors/test_edit_page.html'));
                     } else {
                         res.redirect(`/professor/${req.params.id}`);
                     }
@@ -257,13 +257,6 @@ professorsRouter.post('/:id/test/:code/edit', (req, res) => {
 
         if (req.body.subject !== "") {
             con.query("UPDATE test SET Subject_title" + `='${req.body.subject}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
-                if (err)
-                    console.error(err);
-            });
-        }
-
-        if (req.body.number !== "") {
-            con.query("UPDATE test SET Total_number_of_questions" + `='${req.body.number}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
                 if (err)
                     console.error(err);
             });
@@ -302,7 +295,7 @@ professorsRouter.get('/:id/test/:code/questions/info.json', (req, res) => {
 
 professorsRouter.get('/:id/test/:code/add/question', (req, res) => {
     if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/professors/add_question_page.html')); //TODO добавить
+        res.sendFile(path.join(__dirname, '../pages/professors/add_question_page.html'));
     } else {
         res.redirect('/login');
     }
@@ -313,11 +306,11 @@ professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
         let is_has_true_answer = false;
         let is_has_false_answer = false;
 
-        for (answer of req.body.answers) {
-            if (answer.Is_correct_answer) {
+        for (let answer of req.body.answers) {
+            if (answer.is_correct_answer) {
                 is_has_true_answer = true;
             }
-            if (!answer.Is_correct_answer) {
+            if (!answer.is_correct_answer) {
                 is_has_false_answer = true;
             }
         }
@@ -329,15 +322,17 @@ professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
                     if (err1) {
                         console.error(err1);
                     } else {
-                        con.query(`SELECT * FROM question WHERE Test_id='${req.params.code}' AND Professor_id='${req.params.id}' AND Question_text='${req.body.text}'`,
-                            function (err2, result) {
-                                if (err2)
-                                    console.error(err2);
-                                else {
-                                    let setAllAnswers = async function () {
-                                        for (answer of req.body.answers) {
+                        let answer2 = "";
+                        let setAllFields = async function () {
+                            con.query(`SELECT * FROM question WHERE Test_id='${req.params.code}' AND Professor_id='${req.params.id}' AND Question_text='${req.body.text}'`,
+                                function (err2, result) {
+                                    if (err2)
+                                        console.error(err2);
+                                    else {
+                                        answer2 = result;
+                                        for (let answer of req.body.answers) {
                                             con.query("INSERT INTO answer (`Question_id`,`Professor_id`, `Test_id`, `Answer_text`,`Is_correct_answer`) "
-                                                + `VALUES ('${result[0].Question_id}','${req.params.id}','${req.params.code}', '${answer.text}','${answer.Is_correct_answer}')`,
+                                                + `VALUES ('${result[0].Question_id}','${req.params.id}','${req.params.code}', '${answer.text}','${answer.is_correct_answer}')`,
                                                 function (err3) {
                                                     if (err3)
                                                         console.error(err3);
@@ -345,11 +340,27 @@ professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
                                             );
                                         }
                                     }
-
-                                    setAllAnswers().then(res.status(200).json(result[0].Question_id));
                                 }
-                            }
-                        );
+                            );
+
+                            con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+                                function (err2, result) {
+                                    if (err2)
+                                        console.error(err2);
+                                    else {
+                                        con.query("UPDATE test SET Total_number_of_questions" + `='${result[0].Total_number_of_questions + 1}'` +
+                                            ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+                                            function (err3) {
+                                                if (err3)
+                                                    console.error(err3);
+                                            }
+                                        );
+                                    }
+                                }
+                            );
+                        }
+
+                        setAllFields().then(res.status(200).json(answer2[0]));
                     }
                 }
             );
@@ -370,7 +381,7 @@ professorsRouter.get('/:id/test/:code/question/:numb', (req, res) => {
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/professors/question_page.html'));//TODO добавить
+                        res.sendFile(path.join(__dirname, '../pages/professors/question_page.html'));
                     else
                         res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
                 }
@@ -403,13 +414,31 @@ professorsRouter.get('/:id/test/:code/question/:numb/info.json', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/delete', (req, res) => {
-    con.query(`DELETE FROM question WHERE Professor_id='${req.params.id}'` +
-        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
-        if (err)
-            console.error(err);
-        else
-            res.end();
-    });
+    let setAllFields = async function () {
+        con.query(`DELETE FROM question WHERE Professor_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
+            if (err)
+                console.error(err);
+        });
+
+        con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+            function (err2, result) {
+                if (err2)
+                    console.error(err2);
+                else {
+                    con.query("UPDATE test SET Total_number_of_questions" + `='${result[0].Total_number_of_questions - 1}'` +
+                        ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+                        function (err3) {
+                            if (err3)
+                                console.error(err3);
+                        }
+                    );
+                }
+            }
+        );
+    }
+
+    setAllFields().then(res.end());
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
@@ -443,45 +472,102 @@ professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
             });
         }
 
-        if (req.body.answers !== "") {
-            let is_has_true_answer = false;
-            let is_has_false_answer = false;
-
-            for (answer of req.body.answers) {
-                if (answer.Is_correct_answer) {
-                    is_has_true_answer = true;
-                }
-                if (!answer.Is_correct_answer) {
-                    is_has_false_answer = true;
+        let is_has_true_answer = false;
+        let is_has_false_answer = false;
+        let fullAnswers = [];
+        con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined')
+                        fullAnswers = result;
                 }
             }
+        );
 
-            if (is_has_true_answer && is_has_false_answer) {
-                for (answer of req.body.answers) {
+        for (let answer of fullAnswers) {
+            if (answer.Is_correct_answer) {
+                is_has_true_answer = true;
+            }
+            if (!answer.Is_correct_answer) {
+                is_has_false_answer = true;
+            }
+        }
 
-                    if (answer.text !== "") {
-                        con.query("UPDATE answer SET Answer_text" + `='${answer.text}' WHERE Professor_id='${req.params.id}'` +
-                            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb} AND Answer_id='${answer.id}''`,
-                            function (err) {
-                                if (err)
-                                    console.error(err);
-                            }
-                        );
+        if (is_has_true_answer && is_has_false_answer) {
+            for (let answer of req.body.answers) {
+                con.query("UPDATE answer SET Answer_text" + `='${answer.text}' WHERE Professor_id='${req.params.id}'` +
+                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb} AND Answer_id='${answer.id}''`,
+                    function (err) {
+                        if (err)
+                            console.error(err);
                     }
+                );
 
-                    con.query("UPDATE answer SET Is_correct_answer" + `='${answer.Is_correct_answer}' WHERE Professor_id='${req.params.id}'` +
-                        `AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
-                        function (err) {
-                            if (err)
-                                console.error(err);
-                        }
-                    );
-                }
+                con.query("UPDATE answer SET Is_correct_answer" + `='${answer.is_correct_answer}' WHERE Professor_id='${req.params.id}'` +
+                    `AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
+                    function (err) {
+                        if (err)
+                            console.error(err);
+                    }
+                );
             }
+        } else {
+            res.status(400).json("Вопрос должен содержать хотя бы один правильный и один неправильный ответы");
         }
     }
 
     setAllFiels().then(res.end());
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb/answers/info.json', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        res.status(200).json(result);
+                    } else {
+                        res.status(404).send("Не найдены ответы на вопрос у теста преподавателя");
+                    }
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
+});
+
+professorsRouter.post('/:id/test/:code/question/:numb/add/answer', (req, res) => {
+    if (req.body.text !== "") {
+        con.query("INSERT INTO answer (`Question_id`,`Test_id`,`Professor_id`, `Answer_text`, `Is_correct_answer`) "
+            + `VALUES ('${req.params.numb}','${req.params.code}','${req.params.id}','${req.body.text}', '${req.body.is_correct_answer}')`,
+            function (err1) {
+                if (err1) {
+                    console.error(err1);
+                } else {
+                    res.end();
+                }
+            }
+        );
+    } else {
+        res.status(400).json("Не введен текст ответа");
+    }
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb/answer/:vers/delete', (req, res) => {
+    con.query(`DELETE FROM answer WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'` +
+        ` AND Question_id='${req.params.numb}' AND Answer_id='${req.params.vers}'`, err => {
+        if (err)
+            console.error(err);
+        else
+            res.end();
+    });
 });
 
 module.exports = professorsRouter;
