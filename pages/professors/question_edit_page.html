@@ -5,37 +5,14 @@
     <title>Редактировать вопрос</title>
     <script>
         "use strict";
-
-        let number_of_answers;
-        let locId;
-        let locCode;
-        let locNumb;
-        let answers_ids = [];
-
-        let deleteAnswer = async function (answer_id) {
-            try {
-                await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/answer/${answer_id}/delete`);
-                let ell = this.closest("tr");
-                ell.parentElement.removeChild(ell);
-                answers_ids.splice(answers_ids.indexOf(answer_id, 0), 1);
-                number_of_answers--;
-            } catch (err) {
-                alert(err);
-            }
-        }
-
-        let deleteLine = async function () {
-            let ell = this.closest("tr");
-            ell.parentElement.removeChild(ell);
-            number_of_answers--;
-        }
-
         window.onload = async function () {
             try {
+                let number_of_answers = 0;
                 let loc = window.location.href.split("/");
-                locId = loc[loc.length - 5];
-                locCode = loc[loc.length - 3];
-                locNumb = loc[loc.length - 1];
+                let locId = loc[loc.length - 5];
+                let locCode = loc[loc.length - 3];
+                let locNumb = loc[loc.length - 1];
+                let answers_ids = [];
 
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
@@ -52,7 +29,18 @@
 
                 response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/answers/info.json`);
 
-                number_of_answers = 0;
+                let deleteAnswer = async function (locId2, locCode2, locNumb2, answers_ids2, answer_id2) {
+                    try {
+                        await fetch(`/professor/${locId2}/test/${locCode2}/question/${locNumb2}/answer/${answer_id2}/delete`);
+                        let ell = this.closest("tr");
+                        ell.parentElement.removeChild(ell);
+                        answers_ids.splice(answers_ids.indexOf(answer_id2, 0), 1);
+                        number_of_answers--;
+                    } catch (err) {
+                        alert(err);
+                    }
+                }
+
                 if (response.ok) {
                     resText = await response.json();
                     number_of_answers = resText.length;
@@ -70,9 +58,15 @@
                             `                    <input autocomplete="off" id="answer_text" value='${resText[i].Answer_text}' style="margin-right: 35px" type="text"/>` +
                             "                </td>\n" +
                             "                <td><input type='button' value='Удалить'\n" +
-                            `                           onclick="deleteAnswer(${resText[i].Answer_id})"/></td>\n` +
+                            `                           onclick="${await deleteAnswer(locId, locCode, locNumb, answers_ids, resText[i].Answer_id)}"/></td>\n` +
                             "            </tr>";
                     }
+                }
+
+                let deleteLine = async function () {
+                    let ell = this.closest("tr");
+                    ell.parentElement.removeChild(ell);
+                    number_of_answers--;
                 }
 
                 let addAnswerButton = document.getElementById('addAnswerButton');
@@ -90,7 +84,7 @@
                         `                    <input autocomplete="off" id="answer_text" style="margin-right: 35px" type="text"/>` +
                         "                </td>\n" +
                         "                <td><input type='button' value='Удалить'\n" +
-                        `                           onclick="deleteLine()"/></td>\n` +
+                        `                           onclick="${await deleteLine()}"/></td>\n` +
                         "            </tr>";
                     number_of_answers++;
                 };

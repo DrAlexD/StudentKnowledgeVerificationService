@@ -667,4 +667,12 @@ actionsRouter.post('/tests', (req, res) => {
     }
 });
 
+actionsRouter.get('/add/student/professor/:id/test/:code', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        res.sendFile(path.join(__dirname, '../pages/actions/add_student_to_test_page.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
+
 module.exports = actionsRouter;

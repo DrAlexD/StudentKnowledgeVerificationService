@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест студента</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 4];
+                let locCode = loc[loc.length - 2];
+                let locAttempt = loc[loc.length - 1];
+
+                let response = await fetch(`/session/info.json`);
+                let resTextSession = await response.json();
+
+                if (resTextSession.type === "student" && resTextSession.id !== locId) {
+                    window.location.href = `/student/${resTextSession.id}`;
+                }
+
+                if (resTextSession.type === "professor") {
+                    document.getElementById("deleteButton").hidden = true;
+                }
+
+                response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/info.json`);
+                let resTextTest = await response.json();
+
+                document.getElementById("number_of_questions").innerText = resTextTest.Number_of_questions_in_test;
+                if (resTextSession.type === "student") {
+                    if (resTextTest.Created_by_id !== "0") {
+                        document.getElementById("deleteButton").hidden = true;
+                    }
+                }
+
+                response = await fetch(`/professor/${resTextTest.Professor_id}/test/${locCode}/info.json`);
+                let resText = await response.json();
+
+                document.getElementById("title").innerText = resText.Title;
+                document.getElementById("subject").innerText = resText.Subject_title;
+                document.getElementById("percent").innerText = resText.Percentage_for_test_passing;
+
+                response = await fetch(`/student/${locId}/info.json`);
+                resText = await response.json();
+
+                document.getElementById("firstName").innerText = resText.First_name;
+                document.getElementById("secondName").innerText = resText.Second_name;
+                document.getElementById("group").innerText = resText.Group;
+
+                response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/questions/info.json`);
+                if (response.ok) {
+                    resText = await response.json();
+                    if (resTextTest.Number_of_correct_answers !== "") {
+                        document.getElementById('questionsTable').hidden = false;
+                        let questionsButtons = document.getElementById('questions');
+                        questionsButtons.innerHTML = "";
+                        for (let i = 0; i < resText.length; i++) {
+                            response = await fetch(`/professor/${resTextTest.Professor_id}/test/${locCode}/question/${resText[i].Question_id}/info.json`);
+                            let resText2 = await response.json();
+                            response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/question/${resText[i].Question_id}/info.json`);
+                            let resText3 = await response.json();
+                            let color = resText3.Is_correct_answer_to_question ? "green" : "red";
+                            questionsButtons.innerHTML += "<tr>\n" +
+                                "                <td>\n" +
+                                `                    <span style="color: ${color}; "><input type='button' value='${resText2.Question_text}'\n` +
+                                `                           onclick="window.location.href = '/student/${locId}/test/${locCode}/${locAttempt}/question/${resText[i].Question_id}'"/></span>\n` +
+                                "                </td>\n" +
+                                "            </tr>";
+                        }
+                    } else {
+                        document.getElementById('solveTestButton').hidden = false;
+                        let solveTestButton = document.getElementById('solveTestButton');
+                        solveTestButton.onclick = function () {
+                            window.location.href = `/student/${locId}/test/${locCode}/${locAttempt}/question/${resText[0].Question_id}`;
+                        };
+                    }
+                }
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/student/${locId}`;
+                };
+
+                let deleteButton = document.getElementById('deleteButton');
+                deleteButton.onclick = async function () {
+                    try {
+                        await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/delete`);
+                        window.location.href = `/student/${locId}`;
+                    } catch (err) {
+                        alert(err);
+                    }
+                };
+            } catch
+                (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Тест студента </h2>
+    <form name="student test">
+        <div style="margin-bottom: 5px">
+            <label id="firstName"></label> <label id="secondName"></label>
+        </div>
+        <div style="margin-bottom: 10px">
+            <label id="group"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Название теста:</label> <label id="title"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Предмет:</label> <label id="subject"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Процент успешного выполнения:</label> <label id="percent"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label>Количество вопросов в тесте: </label><label id="number_of_questions"></label>
+        </div>
+        <div style="margin-bottom: 5px">
+            <input id="deleteButton" type="button" value="Удалить"/>
+            <input hidden id="solveTestButton" type="button" value="Решить"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <input id="backButton" type="button" value="Назад"/>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="questionsTable" style="text-align:center">
+            <thead>
+            <tr>
+                <th>Вопросы</th>
+            </tr>
+            </thead>
+            <tbody id="questions">
+            </tbody>
+        </table>
+    </form>
+</div>
+</body>
+</html>

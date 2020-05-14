@@ -5,16 +5,9 @@
     <title>Добавить вопрос</title>
     <script>
         "use strict";
-
-        let number_of_answers;
-        let deleteAnswer = async function () {
-            let ell = this.closest("tr");
-            ell.parentElement.removeChild(ell);
-            number_of_answers--;
-        }
-
         window.onload = async function () {
             try {
+                let number_of_answers = 0;
                 let loc = window.location.href.split("/");
                 let locId = loc[loc.length - 5];
                 let locCode = loc[loc.length - 3];
@@ -26,7 +19,6 @@
                     window.location.href = `/professor/${locId}/test/${locCode}`;
                 }
 
-                number_of_answers = 0;
                 let addAnswerButton = document.getElementById('addAnswerButton');
                 addAnswerButton.onclick = async function () {
                     let answersButtons = document.getElementById('answers');
@@ -42,10 +34,16 @@
                         `                    <input autocomplete="off" id="answer_text" style="margin-right: 35px" type="text"/>` +
                         "                </td>\n" +
                         "                <td><input type='button' value='Удалить'\n" +
-                        `                           onclick="deleteAnswer()"/></td>\n` +
+                        `                           onclick="${await deleteAnswer()}"/></td>\n` +
                         "            </tr>";
                     number_of_answers++;
                 };
+
+                let deleteAnswer = async function () {
+                    let ell = this.closest("tr");
+                    ell.parentElement.removeChild(ell);
+                    number_of_answers--;
+                }
 
                 let inputs = document.getElementsByTagName('input');
 

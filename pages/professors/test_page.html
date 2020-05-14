@@ -34,6 +34,7 @@
                 document.getElementById("subject").innerText = resText.Subject_title;
                 document.getElementById("percent").innerText = resText.Percentage_for_test_passing;
                 document.getElementById("number_of_questions").innerText = resText.Total_number_of_questions;
+                let totalNumberQuestions = resText.Total_number_of_questions;
 
                 response = await fetch(`/professor/${locId}/test/${locCode}/questions/info.json`);
 
@@ -57,16 +58,65 @@
                     window.location.href = `/professor/${locId}/test/${locCode}/add/question`;
                 };
 
+                let attempt = 0;
+
                 let solveTestButton = document.getElementById('solveTestButton');
                 if (resTextSession.type === "student")
                     solveTestButton.value = "Решить";
                 else
                     solveTestButton.value = "Назначить";
-                solveTestButton.onclick = function () {
+                solveTestButton.onclick = async function () {
                     if (resTextSession.type === "student") {
-                        //TODO добавить POST-запрос на добавление теста к студенту (скопировать из add_student_test_page.html или add_test_page.html)
+                        solveTestButton.hidden = true;
+                        document.getElementById('questNumb').hidden = false;
+                        let response3 = await fetch(`/student/${resTextSession.id}/tests/info.json`);
+                        let resText3 = await response3.json();
+                        if (response3.ok) {
+                            for (let j = 0; j < resText3.length; j++) {
+                                if (resText3[j].Test_id === locCode && resText3[j].Attempt_number > attempt)
+                                    attempt = resText3[j].Attempt_number;
+                            }
+                        }
+                        attempt++;
                     } else
-                        window.location.href = `/add/test/${locCode}`; //TODO добавить в actionsRouter
+                        window.location.href = `/add/student/professor/${locId}/test/${locCode}`;
+                };
+
+                let suggestButton = document.getElementById('suggestButton');
+                suggestButton.onclick = async function () {
+                    let number = document.getElementById("numberQuestions");
+                    
+                    let testData = {
+                        studentId: resTextSession.id,
+                        attempt: attempt,
+                        testId: locCode,
+                        professorId: locId,
+                        createdById: 0,
+                        number: number.value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(testData)
+                    };
+
+                    if (number.value !== "") {
+                        if (number.value > 4) {
+                            if (number.value <= totalNumberQuestions) {
+                                let response = await fetch(`/student/${resTextSession.id}/add/test`, options);
+                                let resText = await response.json();
+
+                                if (response.ok)
+                                    window.location.href = `/student/${resTextSession.id}/test/${locCode}/${attempt}`;
+                                else
+                                    alert(resText);
+                            } else
+                                alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                        } else
+                            alert("Нельзя создать тест меньше чем с 5 вопросами")
+                    } else
+                        alert("Не введено количество вопросов")
                 };
 
                 let editButton = document.getElementById('editButton');
@@ -114,6 +164,13 @@
         </div>
         <div style="margin-bottom: 10px">
             <input id="solveTestButton" type="button"/>
+        </div>
+        <div id="questNumb" hidden style="margin-bottom: 10px">
+            <label for="numberQuestions">Количество вопросов в тесте </label> <input autocomplete="off" autofocus
+                                                                                     id="numberQuestions"
+                                                                                     style="margin-right: 20px"
+                                                                                     type="text"/>
+            <input id="suggestButton" type="button" value="Подтвердить"/>
         </div>
         <table bgcolor="#f0f8ff" hidden id="questionsTable" style="text-align:center; margin-bottom: 5px">
             <thead>

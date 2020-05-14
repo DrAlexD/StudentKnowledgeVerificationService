@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор теста</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 3];
+
+                let response = await fetch(`/session/info.json`);
+                let resTextSession = await response.json();
+                let resText;
+
+                if (resTextSession.type === "student" && resTextSession.id !== locId) {
+                    window.location.href = `/student/${resTextSession.id}`;
+                }
+
+                let getAllTests = async function () {
+                    response = await fetch(`/tests/all.json`);
+                    resText = await response.json();
+
+                    if (response.ok) {
+                        let testsTable = document.getElementById("tests");
+                        testsTable.innerHTML = "";
+
+                        for (let i = 0; i < resText.length; i++) {
+                            let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
+                            let resText2 = await response2.json();
+                            let response3 = await fetch(`/student/${locId}/tests/info.json`);
+                            let resText3 = await response3.json();
+                            let attempt = 0;
+                            if (response3.ok) {
+                                for (let j = 0; j < resText3.length; j++) {
+                                    if (resText3[j].Test_id === resText[i].Test_id && resText3[j].Attempt_number > attempt)
+                                        attempt = resText3[j].Attempt_number;
+                                }
+                            }
+                            attempt++;
+                            testsTable.innerHTML += "<tr>\n" +
+                                `                <td>${resText[i].Subject_title}</td>\n` +
+                                `                <td>${resText[i].Title}</td>\n` +
+                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td>${resText[i].Total_number_of_questions}</td>\n` +
+                                `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
+                                `                <td><input type='button' value='Выбрать'\n` +
+                                `                           onclick="${await addStudentTest(resText[i].Test_id,
+                                    resText[i].Professor_id, attempt, resText[i].Total_number_of_questions)}"/></td>\n` +
+                                "            </tr>";
+                        }
+                    } else
+                        alert(resText);
+                };
+
+                await getAllTests();
+
+                let inputs = document.getElementsByTagName('input');
+
+                let searchButton = document.getElementById('searchButton');
+                searchButton.onclick = async function () {
+                    let testData = {
+                        firstName: inputs[0].value,
+                        secondName: inputs[1].value,
+                        subject: inputs[2].value,
+                        title: inputs[3].value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(testData)
+                    };
+
+                    response = await fetch('/tests', options);
+                    resText = await response.json();
+
+                    if (response.ok) {
+                        let testsTable = document.getElementById("tests");
+                        testsTable.innerHTML = "";
+
+                        for (let i = 0; i < resText.length; i++) {
+                            let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
+                            let resText2 = await response2.json();
+                            let response3 = await fetch(`/student/${locId}/tests/info.json`);
+                            let resText3 = await response3.json();
+                            let attempt = 0;
+                            if (response3.ok) {
+                                for (let j = 0; j < resText3.length; j++) {
+                                    if (resText3[j].Test_id === resText[i].Test_id && resText3[j].Attempt_number > attempt)
+                                        attempt = resText3[j].Attempt_number;
+                                }
+                            }
+                            attempt++;
+                            testsTable.innerHTML += "<tr>\n" +
+                                `                <td>${resText[i].Subject_title}</td>\n` +
+                                `                <td>${resText[i].Title}</td>\n` +
+                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td>${resText[i].Total_number_of_questions}</td>\n` +
+                                `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
+                                `                <td><input type='button' value='Выбрать'\n` +
+                                `                           onclick="${await addStudentTest(resText[i].Test_id,
+                                    resText[i].Professor_id, attempt, resText[i].Total_number_of_questions)}"/></td>\n` +
+                                "            </tr>";
+                        }
+                    } else
+                        alert(resText);
+                };
+
+                let attempt;
+                let testId;
+                let professorId;
+                let totalNumberQuestions;
+                let createdById = 0;
+                if (resTextSession.type === "professor") {
+                    createdById = resTextSession.id;
+                }
+
+                let addStudentTest = async function (testId2, professorId2, attempt2, totalNumberQuestions2) {
+                    document.getElementById('questions').hidden = false;
+                    attempt = attempt2;
+                    testId = testId2;
+                    professorId = professorId2;
+                    totalNumberQuestions = totalNumberQuestions2;
+                }
+
+                let suggestButton = document.getElementById('suggestButton');
+                suggestButton.onclick = async function () {
+                    let number = document.getElementById("numberQuestions");
+
+                    let testData = {
+                        studentId: locId,
+                        attempt: attempt,
+                        testId: testId,
+                        professorId: professorId,
+                        createdById: createdById,
+                        number: number.value
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(testData)
+                    };
+
+                    if (number.value !== "") {
+                        if (number.value > 4) {
+                            if (number.value <= totalNumberQuestions) {
+                                let response = await fetch(`/student/${locId}/add/test`, options);
+                                let resText = await response.json();
+
+                                if (response.ok)
+                                    window.location.href = `/student/${locId}/test/${testId}/${attempt}`;
+                                else
+                                    alert(resText);
+                            } else
+                                alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                        } else
+                            alert("Нельзя создать тест меньше чем с 5 вопросами")
+                    } else
+                        alert("Не введено количество вопросов")
+                };
+
+                let allTestsButton = document.getElementById('allTestsButton');
+                allTestsButton.onclick = async function () {
+                    await getAllTests();
+                };
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    window.location.href = `/student/${locId}`;
+                };
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2> Преподаватели </h2>
+    <form name="test choose">
+        <div style="margin-bottom: 5px">
+            <label for="searchFirstName">Имя</label> <input autocomplete="off" id="searchFirstName" autofocus
+                                                            style="margin-right: 30px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
+                                                                 style="margin-right: 64px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="searchSubject">Предмет</label> <input autocomplete="off" id="searchSubject"
+                                                              style="margin-right: 30px" type="text"/>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label for="searchTitle">Название</label> <input autocomplete="off" id="searchTitle"
+                                                             style="margin-right: 100px" type="text"/>
+        </div>
+        <div style="margin-bottom: 10px">
+            <input id="searchButton" type="button" value="Поиск"/>
+        </div>
+        <div style="margin-bottom: 10px">
+            <input id="backButton" type="button" value="Назад"/>
+            <input id="allTestsButton" type="button" value="Все тесты"/>
+        </div>
+        <div id="questions" hidden style="margin-bottom: 15px">
+            <label for="numberQuestions">Количество вопросов в тесте </label> <input autocomplete="off" autofocus
+                                                                                     id="numberQuestions"
+                                                                                     style="margin-right: 20px"
+                                                                                     type="text"/>
+            <input id="suggestButton" type="button" value="Подтвердить"/>
+        </div>
+        <table bgcolor="#f0f8ff" style="text-align:center" width="600px">
+            <thead>
+            <tr>
+                <th>Предмет</th>
+                <th>Тест</th>
+                <th>Создатель</th>
+                <th>Всего вопросов</th>
+                <th>Процент прохождения</th>
+                <th>Решить</th>
+            </tr>
+            </thead>
+            <tbody id="tests">
+            </tbody>
+        </table>
+    </form>
+</div>
+</body>
+</html>

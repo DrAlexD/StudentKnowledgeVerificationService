@@ -450,7 +450,7 @@ professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined') {
-                        res.sendFile(path.join(__dirname, '../pages/professors/question_edit_page.html')); //TODO добавить
+                        res.sendFile(path.join(__dirname, '../pages/professors/question_edit_page.html'));
                     } else {
                         res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
                     }
