@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Вопрос</title>
+    <script>
+        "use strict";
+        window.onload = async function () {
+            try {
+                let loc = window.location.href.split("/");
+                let locId = loc[loc.length - 6];
+                let locCode = loc[loc.length - 4];
+                let locAttempt = loc[loc.length - 3];
+                let locNumb = loc[loc.length - 1];
+
+                let response = await fetch(`/session/info.json`);
+                let resTextSession = await response.json();
+
+                if (resTextSession.type === "student" && resTextSession.id !== locId) {
+                    window.location.href = `/student/${resTextSession.id}`;
+                }
+
+                response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/questions/info.json`);
+                let resTextQuests = await response.json();
+
+                let questNumb = 0;
+                for (let i = 0; i < resTextQuests.length; i++) {
+                    if (resTextQuests[i].Question_id === locNumb) {
+                        questNumb = i + 1;
+                        break;
+                    }
+                }
+                document.getElementById('title').innerText = `Вопрос №${questNumb}`;
+
+                if (questNumb === 1)
+                    document.getElementById('backButton').value = "Назад к тесту"
+                else
+                    document.getElementById('backButton').value = "Предыдущий вопрос"
+                if (questNumb === resTextQuests.length)
+                    document.getElementById('nextButton').value = "Закончить тест"
+                else
+                    document.getElementById('nextButton').value = "Следующий вопрос"
+
+                response = await fetch(`/professor/${resTextQuests[0].Professor_id}/test/${locCode}/question/${locNumb}/info.json`);
+                let resText = await response.json();
+
+                document.getElementById("questionText").innerText = resText.Question_text;
+
+                response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/info.json`);
+                let resTextTest = await response.json();
+
+                response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/question/${locNumb}/answers/info.json`);
+                let resTextAnswers = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('answersTable').hidden = false;
+                    let answersLines = document.getElementById('answersLines');
+                    answersLines.innerHTML = "";
+                    let isDisabled;
+                    if (resTextSession.type === "student")
+                        isDisabled = resTextTest.Number_of_correct_answers !== "" ? "disabled" : "";
+                    else
+                        isDisabled = "disabled";
+                    for (let i = 0; i < resTextAnswers.length; i++) {
+                        let response2 = await fetch(`/professor/${resTextQuests[0].Professor_id}/test/${locCode}/` +
+                            `question/${locNumb}/answer/${resTextAnswers[i].Answer_id}/info.json`);
+                        let resText2 = await response2.json();
+                        let isSelected = resTextAnswers[i].Is_selected_answer ? "checked" : "";
+                        let color;
+                        if (resTextSession.type === "student") {
+                            if (resTextTest.Number_of_correct_answers !== "" && resText2.Is_correct_answer) {
+                                if (resTextAnswers[i].Is_selected_answer)
+                                    color = "green"
+                                else
+                                    color = "red"
+                            } else
+                                color = "black"
+                        } else {
+                            if (resText2.Is_correct_answer) {
+                                if (resTextAnswers[i].Is_selected_answer)
+                                    color = "green"
+                                else
+                                    color = "red"
+                            } else
+                                color = "black"
+                        }
+                        answersLines.innerHTML += `<span style="color: ${color}; "><tr>\n` +
+                            `                <td>\n<input autocomplete="off" style="margin-right: 35px" ${isSelected} ${isDisabled} type="checkbox"/> </td>\n` +
+                            `                <td >${resText2.Answer_text}</td>\n` +
+                            "            </tr></span>";
+                    }
+                }
+
+                let backButton = document.getElementById('backButton');
+                backButton.onclick = function () {
+                    if (questNumb === 1)
+                        window.location.href = `/professor/${locId}/test/${locCode}/${locAttempt}`;
+                    else
+                        window.location.href = `/student/${locId}/test/${locCode}/${locAttempt}/question/${resTextQuests[questNumb - 2].Question_id}`;
+                };
+
+                let inputs = document.getElementsByTagName('input');
+                inputs = inputs.slice(-2)
+                let nextButton = document.getElementById('nextButton');
+                nextButton.onclick = async function () {
+                    if (questNumb === resTextQuests.length) {
+                        if (await solveQuestion()) {
+                            response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/questions/info.json`);
+                            resText = await response.json();
+
+                            let correct_answers = 0;
+                            for (let i = 0; i < resText.length; i++) {
+                                if (resText[i].Is_correct_answer_to_question)
+                                    correct_answers++;
+                            }
+
+                            let testData = {
+                                correct_answers: correct_answers
+                            };
+
+                            let options = {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(testData)
+                            };
+
+                            response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/solve`, options);
+
+                            if (response.ok)
+                                window.location.href = `/student/${locId}/test/${locCode}/${locAttempt}`
+                            else {
+                                resText = await response.json();
+                                alert(resText);
+                            }
+                        }
+                    } else {
+                        if (await solveQuestion())
+                            window.location.href = `/student/${locId}/test/${locCode}/${locAttempt}/question/${resTextQuests[questNumb].Question_id}`;
+                    }
+                };
+
+                let solveQuestion = async function () {
+                    let answers = [];
+                    for (let i = 0; i < resTextAnswers.length; i++) {
+                        let answer = {
+                            sel: inputs[i].checked,
+                            id: resTextAnswers[i].Answer_id
+                        }
+                        answers.push(answer);
+                    }
+                    let questionData = {
+                        answers: answers
+                    };
+
+                    let options = {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(questionData)
+                    };
+
+                    response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/question/${locNumb}/solve`, options);
+
+                    if (!response.ok) {
+                        resText = await response.json();
+                        alert(resText);
+                    }
+                    return response.ok
+                }
+            } catch (err) {
+                alert(err);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<div align="center" style="margin-top: 100px">
+    <h2 id="title"></h2>
+    <form name="question">
+        <div style="margin-bottom: 10px">
+            <label id="questionText"></label>
+        </div>
+        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 15px">
+            <thead>
+            <tr>
+                <th>Выбор</th>
+                <th>Варианты ответа</th>
+            </tr>
+            </thead>
+            <tbody id="answersLines">
+            </tbody>
+        </table>
+        <div>
+            <input id="backButton" type="button"/>
+            <input id="nextButton" type="button"/>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -98,7 +98,7 @@ studentsRouter.post('/:id/edit', (req, res) => {
     }
 
     if (f) {
-        let setAllFiels = async function () {
+        let setAllFields = async function () {
             if (req.body.firstName !== "") {
                 con.query("UPDATE student SET First_name" + `='${req.body.firstName}' WHERE Student_id='${req.params.id}'`, err => {
                     if (err)
@@ -128,7 +128,7 @@ studentsRouter.post('/:id/edit', (req, res) => {
             }
         }
 
-        setAllFiels().then(res.end());
+        setAllFields().then(res.end());
     }
 });
 
@@ -203,7 +203,7 @@ studentsRouter.get('/:id/add/test', (req, res) => {
 
 studentsRouter.post('/:id/add/test', (req, res) => {
     if (req.body.number !== "") {
-        let setAllFiels = async function () {
+        let setAllFields = async function () {
             con.query("INSERT INTO student_test (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Created_by_id`,`Number_of_questions_in_test`) "
                 + `VALUES ('${req.body.attempt}','${req.body.studentId}', '${req.body.testId}', '${req.body.professorId}','${req.body.createdById}', '${req.body.number}')`,
                 function (err1) {
@@ -369,7 +369,7 @@ studentsRouter.post('/:id/add/test', (req, res) => {
             }
         }
 
-        setAllFiels().then(res.end());
+        setAllFields().then(res.end());
     } else {
         res.status(400).json("Не введено количество вопросов в тесте");
     }
@@ -416,7 +416,7 @@ studentsRouter.get('/:id/test/:code/:attempt/question/:numb', (req, res) => {
                     console.error(err);
                 else {
                     if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/students/student_question_page.html')); //TODO добавить
+                        res.sendFile(path.join(__dirname, '../pages/students/student_question_page.html'));
                     else
                         res.redirect(`/student/${req.params.id}/test/${req.params.code}/${req.params.attempt}`);
                 }
@@ -449,5 +449,89 @@ studentsRouter.get('/:id/test/:code/:attempt/question/:numb/info.json', (req, re
     }
 });
 
+studentsRouter.get('/:id/test/:code/:attempt/question/:numb/answers/info.json', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM student_answer WHERE Student_id='${req.params.id}' AND Test_id='${req.params.code}'` +
+            ` AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        res.status(200).json(result);
+                    } else {
+                        res.status(404).send("Не найдены ответы студента");
+                    }
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
+});
+
+studentsRouter.post('/:id/test/:code/:attempt/question/:numb/solve', (req, res) => {
+    let answers = req.body.answers;
+    let setAllFields = async function () {
+        let allAnswers = [];
+        con.query(`SELECT * FROM answer` +
+            ` WHERE Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    allAnswers = result;
+                }
+            }
+        );
+
+        for (let i = 0; i < answers.length; i++) {
+            con.query("UPDATE student_answer SET Is_selected_answer" + `='${answers[i].sel}' WHERE Student_id='${req.params.id}'` +
+                ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'` +
+                ` AND Answer_id='${answers[i].id}'`,
+                function (err) {
+                    if (err)
+                        console.error(err);
+                }
+            );
+        }
+
+        let f = true;
+        for (let i = 0; i < allAnswers.length; i++) {
+            for (let j = 0; j < answers.length; j++) {
+                if (allAnswers[i].Answer_id === answers[j].id) {
+                    if ((allAnswers[i].Is_correct_answer && !answers[j].sel) || (!allAnswers[i].Is_correct_answer && answers[j].sel)) {
+                        f = false;
+                        break;
+                    }
+                }
+            }
+            if (!f)
+                break;
+        }
+
+        con.query("UPDATE student_question SET Is_correct_answer_to_question" + `='${f}' WHERE Student_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'`,
+            function (err) {
+                if (err)
+                    console.error(err);
+            }
+        );
+    }
+
+    setAllFields().then(res.end());
+});
+
+studentsRouter.post('/:id/test/:code/:attempt/solve', (req, res) => {
+    con.query("UPDATE student_test SET Number_of_correct_answers" + `='${req.body.correct_answers}' WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}'`,
+        function (err) {
+            if (err)
+                console.error(err);
+            else
+                res.end();
+        }
+    );
+});
 
 module.exports = studentsRouter;

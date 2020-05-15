@@ -98,7 +98,7 @@ professorsRouter.post('/:id/edit', (req, res) => {
     }
 
     if (f) {
-        let setAllFiels = async function () {
+        let setAllFields = async function () {
             if (req.body.firstName !== "") {
                 con.query("UPDATE professor SET First_name" + `='${req.body.firstName}' WHERE Professor_id='${req.params.id}'`, err => {
                     if (err)
@@ -121,7 +121,7 @@ professorsRouter.post('/:id/edit', (req, res) => {
             }
         }
 
-        setAllFiels().then(res.end());
+        setAllFields().then(res.end());
     }
 });
 
@@ -247,7 +247,7 @@ professorsRouter.get('/:id/test/:code/edit', (req, res) => {
 });
 
 professorsRouter.post('/:id/test/:code/edit', (req, res) => {
-    let setAllFiels = async function () {
+    let setAllFields = async function () {
         if (req.body.title !== "") {
             con.query("UPDATE test SET Title" + `='${req.body.title}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
                 if (err)
@@ -270,7 +270,7 @@ professorsRouter.post('/:id/test/:code/edit', (req, res) => {
         }
     }
 
-    setAllFiels().then(res.end());
+    setAllFields().then(res.end());
 });
 
 professorsRouter.get('/:id/test/:code/questions/info.json', (req, res) => {
@@ -463,7 +463,7 @@ professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
 });
 
 professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
-    let setAllFiels = async function () {
+    let setAllFields = async function () {
         if (req.body.text !== "") {
             con.query("UPDATE question SET Question_text" + `='${req.body.text}'` +
                 ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
@@ -499,7 +499,7 @@ professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
         if (is_has_true_answer && is_has_false_answer) {
             for (let answer of req.body.answers) {
                 con.query("UPDATE answer SET Answer_text" + `='${answer.text}' WHERE Professor_id='${req.params.id}'` +
-                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb} AND Answer_id='${answer.id}''`,
+                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
                     function (err) {
                         if (err)
                             console.error(err);
@@ -507,7 +507,7 @@ professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
                 );
 
                 con.query("UPDATE answer SET Is_correct_answer" + `='${answer.is_correct_answer}' WHERE Professor_id='${req.params.id}'` +
-                    `AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
+                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
                     function (err) {
                         if (err)
                             console.error(err);
@@ -519,7 +519,7 @@ professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
         }
     }
 
-    setAllFiels().then(res.end());
+    setAllFields().then(res.end());
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/answers/info.json', (req, res) => {
@@ -568,6 +568,27 @@ professorsRouter.get('/:id/test/:code/question/:numb/answer/:vers/delete', (req,
         else
             res.end();
     });
+});
+
+professorsRouter.get('/:id/test/:code/question/:numb/answer/:vers/info.json', (req, res) => {
+    if (typeof req.session.user != 'undefined') {
+        con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'` +
+            ` AND Question_id='${req.params.numb}' AND Answer_id='${req.params.vers}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        res.status(200).json(result[0]);
+                    } else {
+                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}/question/${req.params.numb}`);
+                    }
+                }
+            }
+        );
+    } else {
+        res.redirect('/login');
+    }
 });
 
 module.exports = professorsRouter;
