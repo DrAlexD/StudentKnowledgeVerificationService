@@ -17,7 +17,7 @@
                     window.location.href = `/professor/${locId}`;
                 }
 
-                if (resText.type === "professor" && resText.id !== locId) {
+                if (resText.type === "professor" && resText.id !== parseInt(locId, 10)) {
                     window.location.href = `/professor/${resText.id}/add/test`;
                 }
 
@@ -28,7 +28,7 @@
                     let testData = {
                         title: inputs[0].value,
                         subject: inputs[1].value,
-                        percent: inputs[2].value
+                        percent: parseInt(inputs[2].value, 10)
                     };
 
                     let options = {
@@ -63,14 +63,15 @@
     <form name="add test">
         <div style="margin-bottom: 5px">
             <label for="title">Название</label> <input autocomplete="off" autofocus id="title"
-                                                       style="margin-right: 100px" type="text"/>
+                                                       style="margin-right: 67px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
-            <label for="subject">Предмет</label> <input autocomplete="off" id="subject" style="margin-right: 50px" type="number"/>
+            <label for="subject">Предмет</label> <input autocomplete="off" id="subject" style="margin-right: 62px"
+                                                        type="text"/>
         </div>
         <div style="margin-bottom: 15px">
             <label for="percent">Процент успешного выполнения</label> <input autocomplete="off" id="percent"
-                                                                            style="margin-right: 20px" type="text"/>
+                                                                             style="margin-right: 227px" type="number"/>
         </div>
         <div>
             <input id="backButton" type="button" value="Назад"/>

@@ -15,6 +15,7 @@
                     resText = await response.json();
 
                     if (response.ok) {
+                        document.getElementById('table').hidden = false;
                         let professorsTable = document.getElementById("professors");
                         professorsTable.innerHTML = "";
                         for (let i = 0; i < resText.length; i++) {
@@ -82,11 +83,11 @@
     <form name="professors">
         <div style="margin-bottom: 5px">
             <label for="searchFirstName">Имя</label> <input autocomplete="off" autofocus id="searchFirstName"
-                                                            style="margin-right: 30px" type="text"/>
+                                                            style="margin-right: 32px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
-                                                                 style="margin-right: 64px" type="text"/>
+                                                                 style="margin-right: 66px" type="text"/>
         </div>
         <div style="margin-bottom: 10px">
             <input id="searchButton" type="button" value="Поиск"/>
@@ -95,7 +96,7 @@
             <input id="backButton" type="button" value="Назад"/>
             <input id="allProfessorsButton" type="button" value="Все преподаватели"/>
         </div>
-        <table bgcolor="#f0f8ff" style="text-align:center" width="300px">
+        <table bgcolor="beige" id="table" hidden style="text-align:center">
             <thead>
             <tr>
                 <th>Преподаватель</th>

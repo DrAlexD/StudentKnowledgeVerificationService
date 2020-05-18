@@ -25,13 +25,7 @@
                     let response = await fetch('/login', options);
 
                     if (response.ok) {
-                        response = await fetch(`/session/info.json`);
-                        let resText = await response.json();
-
-                        if (resText.type === "student") {
-                            window.location.href = `/student/${resText.id}`;
-                        } else
-                            window.location.href = '/actions';
+                        window.location.href = `/actions`;
                     } else {
                         let resText = await response.json();
                         alert(resText);
@@ -49,11 +43,11 @@
     <h2> Вход </h2>
     <form name="logIn">
         <div style="margin-bottom: 5px">
-            <label for="username">Логин</label> <input autofocus id="username" style="margin-right: 40px"
+            <label for="username">Логин</label> <input autofocus id="username" style="margin-right: 48px"
                                                        type="text"/>
         </div>
         <div style="margin-bottom: 15px">
-            <label for="password">Пароль</label> <input id="password" style="margin-right: 48px" type="password"/>
+            <label for="password">Пароль</label> <input id="password" style="margin-right: 56px" type="password"/>
         </div>
         <div>
             <input id="logInButton" type="button" value="Войти"/>

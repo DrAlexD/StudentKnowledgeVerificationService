@@ -80,48 +80,38 @@ professorsRouter.get('/:id/edit', (req, res) => {
 });
 
 professorsRouter.post('/:id/edit', (req, res) => {
-    let f = true;
-
     if (req.body.login !== "") {
         if (req.body.login === "admin") {
-            f = false;
             res.status(400).json("Недопустимый логин: admin");
         } else {
             con.query("UPDATE professor SET Login" + `='${req.body.login}' WHERE Professor_id='${req.params.id}'`, err => {
-                if (err) {
-                    console.error(err);
-                    f = false;
+                if (err)
                     res.status(400).json("Копия имеющегося преподавателя");
-                }
+                else
+                    res.end();
             });
         }
     }
 
-    if (f) {
-        let setAllFields = async function () {
-            if (req.body.firstName !== "") {
-                con.query("UPDATE professor SET First_name" + `='${req.body.firstName}' WHERE Professor_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
+    if (req.body.firstName !== "") {
+        con.query("UPDATE professor SET First_name" + `='${req.body.firstName}' WHERE Professor_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
 
-            if (req.body.secondName !== "") {
-                con.query("UPDATE professor SET Second_name" + `='${req.body.secondName}' WHERE Professor_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
+    if (req.body.secondName !== "") {
+        con.query("UPDATE professor SET Second_name" + `='${req.body.secondName}' WHERE Professor_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
 
-            if (req.body.password !== "") {
-                con.query("UPDATE professor SET Password" + `='${req.body.password}' WHERE Professor_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
-        }
-
-        setAllFields().then(res.end());
+    if (req.body.password !== "") {
+        con.query("UPDATE professor SET Password" + `='${req.body.password}' WHERE Professor_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
     }
 });
 
@@ -161,7 +151,7 @@ professorsRouter.post('/:id/add/test', (req, res) => {
                 if (err1) {
                     console.error(err1);
                 } else {
-                    con.query(`SELECT * FROM test WHERE Title='${req.body.title}' AND Professor_id='${req.params.id}' AND Subject_title='${req.body.title}'`,
+                    con.query(`SELECT * FROM test WHERE Title='${req.body.title}' AND Professor_id='${req.params.id}' AND Subject_title='${req.body.subject}'`,
                         function (err2, result) {
                             if (err2)
                                 console.error(err2);
@@ -247,30 +237,28 @@ professorsRouter.get('/:id/test/:code/edit', (req, res) => {
 });
 
 professorsRouter.post('/:id/test/:code/edit', (req, res) => {
-    let setAllFields = async function () {
-        if (req.body.title !== "") {
-            con.query("UPDATE test SET Title" + `='${req.body.title}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
-                if (err)
-                    console.error(err);
-            });
-        }
-
-        if (req.body.subject !== "") {
-            con.query("UPDATE test SET Subject_title" + `='${req.body.subject}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
-                if (err)
-                    console.error(err);
-            });
-        }
-
-        if (req.body.percent !== "") {
-            con.query("UPDATE test SET Percentage_for_test_passing" + `='${req.body.percent}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
-                if (err)
-                    console.error(err);
-            });
-        }
+    if (req.body.title !== "") {
+        con.query("UPDATE test SET Title" + `='${req.body.title}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
+            if (err)
+                console.error(err);
+        });
     }
 
-    setAllFields().then(res.end());
+    if (req.body.subject !== "") {
+        con.query("UPDATE test SET Subject_title" + `='${req.body.subject}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
+
+    if (req.body.percent !== "") {
+        con.query("UPDATE test SET Percentage_for_test_passing" + `='${req.body.percent}' WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
+
+    res.end();
 });
 
 professorsRouter.get('/:id/test/:code/questions/info.json', (req, res) => {
@@ -305,40 +293,44 @@ professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
     if (req.body.text !== "") {
         let is_has_true_answer = false;
         let is_has_false_answer = false;
+        let is_no_empty_answers = true;
 
-        for (let answer of req.body.answers) {
-            if (answer.is_correct_answer) {
+        let answers = req.body.answers;
+        for (let i = 0; i < answers.length; i++) {
+            if (answers[i].is_correct_answer) {
                 is_has_true_answer = true;
             }
-            if (!answer.is_correct_answer) {
+            if (!answers[i].is_correct_answer) {
                 is_has_false_answer = true;
             }
+            if (answers[i].text === "") {
+                is_no_empty_answers = false;
+            }
+            answers[i].is_correct_answer = answers[i].is_correct_answer ? 1 : 0;
         }
 
-        if (is_has_true_answer && is_has_false_answer) {
-            con.query("INSERT INTO question (`Professor_id`, `Test_id`, `Question_text`) "
-                + `VALUES ('${req.params.id}','${req.params.code}', '${req.body.text}')`,
-                function (err1) {
-                    if (err1) {
-                        console.error(err1);
-                    } else {
-                        let answer2 = "";
-                        let setAllFields = async function () {
+        if (is_no_empty_answers) {
+            if (is_has_true_answer && is_has_false_answer) {
+                con.query("INSERT INTO question (`Professor_id`, `Test_id`, `Question_text`) "
+                    + `VALUES ('${req.params.id}','${req.params.code}', '${req.body.text}')`, function (err1) {
+                        if (err1) {
+                            console.error(err1);
+                        } else {
                             con.query(`SELECT * FROM question WHERE Test_id='${req.params.code}' AND Professor_id='${req.params.id}' AND Question_text='${req.body.text}'`,
                                 function (err2, result) {
                                     if (err2)
                                         console.error(err2);
                                     else {
-                                        answer2 = result;
-                                        for (let answer of req.body.answers) {
+                                        for (let i = 0; i < answers.length; i++) {
                                             con.query("INSERT INTO answer (`Question_id`,`Professor_id`, `Test_id`, `Answer_text`,`Is_correct_answer`) "
-                                                + `VALUES ('${result[0].Question_id}','${req.params.id}','${req.params.code}', '${answer.text}','${answer.is_correct_answer}')`,
+                                                + `VALUES ('${result[0].Question_id}','${req.params.id}','${req.params.code}', '${answers[i].text}','${answers[i].is_correct_answer}')`,
                                                 function (err3) {
                                                     if (err3)
                                                         console.error(err3);
                                                 }
                                             );
                                         }
+                                        res.status(200).json(result[0]);
                                     }
                                 }
                             );
@@ -359,13 +351,13 @@ professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
                                 }
                             );
                         }
-
-                        setAllFields().then(res.status(200).json(answer2[0]));
                     }
-                }
-            );
+                );
+            } else {
+                res.status(400).json("Вопрос должен содержать хотя бы один правильный и один неправильный ответы");
+            }
         } else {
-            res.status(400).json("Вопрос должен содержать хотя бы один правильный и один неправильный ответы");
+            res.status(400).json("Каждый ответ не должен быть пустым");
         }
     } else {
         res.status(400).json("Не введен текст вопроса");
@@ -414,31 +406,29 @@ professorsRouter.get('/:id/test/:code/question/:numb/info.json', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/delete', (req, res) => {
-    let setAllFields = async function () {
-        con.query(`DELETE FROM question WHERE Professor_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
-            if (err)
-                console.error(err);
-        });
+    con.query(`DELETE FROM question WHERE Professor_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
+        if (err)
+            console.error(err);
+    });
 
-        con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
-            function (err2, result) {
-                if (err2)
-                    console.error(err2);
-                else {
-                    con.query("UPDATE test SET Total_number_of_questions" + `='${result[0].Total_number_of_questions - 1}'` +
-                        ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
-                        function (err3) {
-                            if (err3)
-                                console.error(err3);
-                        }
-                    );
-                }
+    con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+        function (err2, result) {
+            if (err2)
+                console.error(err2);
+            else {
+                con.query("UPDATE test SET Total_number_of_questions" + `='${result[0].Total_number_of_questions - 1}'` +
+                    ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+                    function (err3) {
+                        if (err3)
+                            console.error(err3);
+                    }
+                );
             }
-        );
-    }
+        }
+    );
 
-    setAllFields().then(res.end());
+    res.end();
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
@@ -463,63 +453,58 @@ professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
 });
 
 professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
-    let setAllFields = async function () {
-        if (req.body.text !== "") {
-            con.query("UPDATE question SET Question_text" + `='${req.body.text}'` +
-                ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
-                if (err)
-                    console.error(err);
-            });
+    if (req.body.text !== "") {
+        con.query("UPDATE question SET Question_text" + `='${req.body.text}'` +
+            ` WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
+
+    let is_has_true_answer = false;
+    let is_has_false_answer = false;
+    let is_no_empty_answers = true;
+
+    let answers = req.body.answers;
+    for (let i = 0; i < answers.length; i++) {
+        if (answers[i].is_correct_answer) {
+            is_has_true_answer = true;
         }
-
-        let is_has_true_answer = false;
-        let is_has_false_answer = false;
-        let fullAnswers = [];
-        con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        fullAnswers = result;
-                }
-            }
-        );
-
-        for (let answer of fullAnswers) {
-            if (answer.Is_correct_answer) {
-                is_has_true_answer = true;
-            }
-            if (!answer.Is_correct_answer) {
-                is_has_false_answer = true;
-            }
+        if (!answers[i].is_correct_answer) {
+            is_has_false_answer = true;
         }
+        if (answers[i].text === "") {
+            is_no_empty_answers = false;
+        }
+        answers[i].is_correct_answer = answers[i].is_correct_answer ? 1 : 0;
+    }
 
+    if (is_no_empty_answers) {
         if (is_has_true_answer && is_has_false_answer) {
-            for (let answer of req.body.answers) {
-                con.query("UPDATE answer SET Answer_text" + `='${answer.text}' WHERE Professor_id='${req.params.id}'` +
-                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
+            for (let i = 0; i < answers.length; i++) {
+                con.query("UPDATE answer SET Answer_text" + `='${answers[i].text}' WHERE Professor_id='${req.params.id}'` +
+                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answers[i].id}'`,
                     function (err) {
                         if (err)
                             console.error(err);
                     }
                 );
 
-                con.query("UPDATE answer SET Is_correct_answer" + `='${answer.is_correct_answer}' WHERE Professor_id='${req.params.id}'` +
-                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answer.id}'`,
+                con.query("UPDATE answer SET Is_correct_answer" + `='${answers[i].is_correct_answer}' WHERE Professor_id='${req.params.id}'` +
+                    ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}' AND Answer_id='${answers[i].id}'`,
                     function (err) {
                         if (err)
                             console.error(err);
                     }
                 );
             }
+            res.end();
         } else {
             res.status(400).json("Вопрос должен содержать хотя бы один правильный и один неправильный ответы");
         }
+    } else {
+        res.status(400).json("Каждый ответ не должен быть пустым");
     }
-
-    setAllFields().then(res.end());
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/answers/info.json', (req, res) => {
@@ -546,12 +531,21 @@ professorsRouter.get('/:id/test/:code/question/:numb/answers/info.json', (req, r
 professorsRouter.post('/:id/test/:code/question/:numb/add/answer', (req, res) => {
     if (req.body.text !== "") {
         con.query("INSERT INTO answer (`Question_id`,`Test_id`,`Professor_id`, `Answer_text`, `Is_correct_answer`) "
-            + `VALUES ('${req.params.numb}','${req.params.code}','${req.params.id}','${req.body.text}', '${req.body.is_correct_answer}')`,
+            + `VALUES ('${req.params.numb}','${req.params.code}','${req.params.id}','${req.body.text}', '${req.body.is_correct_answer ? 1 : 0}')`,
             function (err1) {
                 if (err1) {
                     console.error(err1);
                 } else {
-                    res.end();
+                    con.query(`SELECT * FROM answer WHERE Answer_text='${req.body.text}' AND Professor_id='${req.params.id}'` +
+                        ` AND Question_id='${req.params.numb}' AND Test_id='${req.params.code}' AND Is_correct_answer='${req.body.is_correct_answer ? 1 : 0}'`,
+                        function (err2, result) {
+                            if (err2)
+                                console.error(err2);
+                            else {
+                                res.status(200).json(result[0]);
+                            }
+                        }
+                    );
                 }
             }
         );

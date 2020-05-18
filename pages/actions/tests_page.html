@@ -15,6 +15,7 @@
                     resText = await response.json();
 
                     if (response.ok) {
+                        document.getElementById('table').hidden = false;
                         let testsTable = document.getElementById("tests");
                         testsTable.innerHTML = "";
 
@@ -24,8 +25,9 @@
                             testsTable.innerHTML += "<tr>\n" +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
                                 `                <td><input type='button' value='${resText[i].Title}'\n` +
-                                `                           onclick="window.location.href = '/professor/${resText.Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
-                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
+                                `                <td><input type='button' value='${resText2.First_name} ${resText2.Second_name}'\n` +
+                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
                                 `                <td>${resText[i].Total_number_of_questions}</td>\n` +
                                 `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
                                 "            </tr>";
@@ -67,7 +69,8 @@
                                 `                <td>${resText[i].Subject_title}</td>\n` +
                                 `                <td><input type='button' value='${resText[i].Title}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
-                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td><input type='button' value='${resText2.First_name} ${resText2.Second_name}'\n` +
+                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
                                 `                <td>${resText[i].Total_number_of_questions}</td>\n` +
                                 `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
                                 "            </tr>";
@@ -94,23 +97,23 @@
 
 <body>
 <div align="center" style="margin-top: 100px">
-    <h2> Преподаватели </h2>
+    <h2> Тесты </h2>
     <form name="tests">
         <div style="margin-bottom: 5px">
             <label for="searchFirstName">Имя</label> <input autocomplete="off" autofocus id="searchFirstName"
-                                                            style="margin-right: 30px" type="text"/>
+                                                            style="margin-right: 32px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
-                                                                 style="margin-right: 64px" type="text"/>
+                                                                 style="margin-right: 66px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSubject">Предмет</label> <input autocomplete="off" id="searchSubject"
-                                                                 style="margin-right: 30px" type="text"/>
+                                                                 style="margin-right: 62px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchTitle">Название</label> <input autocomplete="off" id="searchTitle"
-                                                                 style="margin-right: 100px" type="text"/>
+                                                                 style="margin-right: 67px" type="text"/>
         </div>
         <div style="margin-bottom: 10px">
             <input id="searchButton" type="button" value="Поиск"/>
@@ -119,7 +122,7 @@
             <input id="backButton" type="button" value="Назад"/>
             <input id="allTestsButton" type="button" value="Все тесты"/>
         </div>
-        <table bgcolor="#f0f8ff" style="text-align:center" width="500px">
+        <table bgcolor="beige" id="table" hidden style="text-align:center">
             <thead>
             <tr>
                 <th>Предмет</th>

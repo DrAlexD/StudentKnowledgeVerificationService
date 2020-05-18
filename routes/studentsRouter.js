@@ -80,55 +80,45 @@ studentsRouter.get('/:id/edit', (req, res) => {
 });
 
 studentsRouter.post('/:id/edit', (req, res) => {
-    let f = true;
-
     if (req.body.login !== "") {
         if (req.body.login === "admin") {
-            f = false;
             res.status(400).json("Недопустимый логин: admin");
         } else {
             con.query("UPDATE student SET Login" + `='${req.body.login}' WHERE Student_id='${req.params.id}'`, err => {
-                if (err) {
-                    console.error(err);
-                    f = false;
+                if (err)
                     res.status(400).json("Копия имеющегося студента");
-                }
+                else
+                    res.end();
             });
         }
     }
 
-    if (f) {
-        let setAllFields = async function () {
-            if (req.body.firstName !== "") {
-                con.query("UPDATE student SET First_name" + `='${req.body.firstName}' WHERE Student_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
+    if (req.body.firstName !== "") {
+        con.query("UPDATE student SET First_name" + `='${req.body.firstName}' WHERE Student_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
 
-            if (req.body.secondName !== "") {
-                con.query("UPDATE student SET Second_name" + `='${req.body.secondName}' WHERE Student_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
+    if (req.body.secondName !== "") {
+        con.query("UPDATE student SET Second_name" + `='${req.body.secondName}' WHERE Student_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
 
-            if (req.body.studentGroup !== "") {
-                con.query("UPDATE student SET `Group`" + `='${req.body.studentGroup}' WHERE Student_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
+    if (req.body.studentGroup !== "") {
+        con.query("UPDATE student SET `Group`" + `='${req.body.studentGroup}' WHERE Student_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
+    }
 
-            if (req.body.password !== "") {
-                con.query("UPDATE student SET Password" + `='${req.body.password}' WHERE Student_id='${req.params.id}'`, err => {
-                    if (err)
-                        console.error(err);
-                });
-            }
-        }
-
-        setAllFields().then(res.end());
+    if (req.body.password !== "") {
+        con.query("UPDATE student SET Password" + `='${req.body.password}' WHERE Student_id='${req.params.id}'`, err => {
+            if (err)
+                console.error(err);
+        });
     }
 });
 
@@ -202,174 +192,173 @@ studentsRouter.get('/:id/add/test', (req, res) => {
 });
 
 studentsRouter.post('/:id/add/test', (req, res) => {
+    //TODO не работает тут
     if (req.body.number !== "") {
-        let setAllFields = async function () {
-            con.query("INSERT INTO student_test (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Created_by_id`,`Number_of_questions_in_test`) "
-                + `VALUES ('${req.body.attempt}','${req.body.studentId}', '${req.body.testId}', '${req.body.professorId}','${req.body.createdById}', '${req.body.number}')`,
-                function (err1) {
-                    if (err1)
-                        console.error(err1);
-                }
-            );
-
-            let questionsIds = [];
-            for (let i = 0; i < req.body.number; i++) {
-                questionsIds.push(0);
+        con.query("INSERT INTO student_test (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Created_by_id`,`Number_of_questions_in_test`) "
+            + `VALUES ('${req.body.attempt}','${req.params.id}', '${req.body.testId}', '${req.body.professorId}','${req.body.createdById}', '${req.body.number}')`,
+            function (err1) {
+                if (err1)
+                    console.error(err1);
             }
+        );
 
-            function getRandomInt(max) {
-                return Math.floor(Math.random() * Math.floor(max));
-            }
-
-            con.query(`SELECT * FROM question WHERE Professor_id='${req.body.professorId}' AND Test_id='${req.body.testId}'`,
-                function (err, result) {
-                    if (err)
-                        console.error(err);
-                    else {
-                        if (typeof result[0] != 'undefined') {
-                            let mask = [];
-                            for (let i = 0; i < result.length; i++) {
-                                mask.push(0);
-                            }
-                            let current_number = 0;
-                            while (current_number !== req.body.number) {
-                                for (let i = 0; i < result.length; i++) {
-                                    if (current_number !== req.body.number) {
-                                        if (mask[i] === 0 && getRandomInt(result.length / req.body.number + 1) === 0) {
-                                            mask[i] = 1;
-                                            current_number++;
-                                        }
-                                    } else
-                                        break;
-                                }
-                            }
-
-                            let posMask = []
-
-                            function isHasPos(randomPos) {
-                                for (let i = 0; i < posMask.length; i++) {
-                                    if (posMask[i] === randomPos)
-                                        return true
-                                }
-                                return false
-                            }
-
-                            for (let i = 0; i < result.length; i++) {
-                                if (mask[i] === 1) {
-                                    let randomPos = getRandomInt(req.body.number)
-                                    while (isHasPos(randomPos)) {
-                                        randomPos = getRandomInt(req.body.number)
-                                    }
-                                    posMask.push(randomPos)
-                                } else
-                                    posMask.push(-1);
-                            }
-
-                            for (let i = 0; i < result.length; i++) {
-                                if (posMask[i] !== -1) {
-                                    questionsIds[posMask[i]] = result[i].Question_id
-                                }
-                            }
-                        } else {
-                            console.error("Не найдены вопросы у теста преподавателя");
-                        }
-                    }
-                }
-            );
-
-            for (let i = 0; i < questionsIds.length; i++) {
-                con.query("INSERT INTO student_question (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Question_id`) "
-                    + `VALUES ('${req.body.attempt}','${req.params.id}', '${req.body.testId}', '${req.body.professorId}', '${questionsIds[i]}')`,
-                    function (err1) {
-                        if (err1)
-                            console.error(err1);
-                    }
-                );
-            }
-
-            for (let j = 0; j < questionsIds.length; j++) {
-                let answersIds = [];
-
-                con.query(`SELECT * FROM answer WHERE Professor_id='${req.body.professorId}' AND Test_id='${req.body.testId}'` +
-                    `AND Question_id='${questionsIds[j]}'`,
-                    function (err, result) {
-                        if (err)
-                            console.error(err);
-                        else {
-                            if (typeof result[0] != 'undefined') {
-                                let mask = [];
-                                for (let i = 0; i < result.length; i++) {
-                                    mask.push(1);
-                                }
-
-                                let right_number = 0;
-                                let wrong_number = 0;
-                                while (right_number < 1 || wrong_number < 1) {
-                                    for (let i = 0; i < mask.length; i++) {
-                                        mask[i] = 1;
-                                    }
-                                    for (let i = 0; i < result.length; i++) {
-                                        if (getRandomInt(result.length < 9 ? 11 - result.length : 2) === 0) {
-                                            mask[i] = 0;
-                                        } else {
-                                            if (result[i].Is_correct_answer)
-                                                right_number++;
-                                            else
-                                                wrong_number++;
-                                        }
-                                    }
-                                }
-
-                                let posMask = []
-
-                                function isHasPos(randomPos) {
-                                    for (let i = 0; i < posMask.length; i++) {
-                                        if (posMask[i] === randomPos)
-                                            return true
-                                    }
-                                    return false
-                                }
-
-                                for (let i = 0; i < result.length; i++) {
-                                    if (mask[i] === 1) {
-                                        let randomPos = getRandomInt(right_number + wrong_number)
-                                        while (isHasPos(randomPos)) {
-                                            randomPos = getRandomInt(right_number + wrong_number)
-                                        }
-                                        posMask.push(randomPos)
-                                    } else
-                                        posMask.push(-1);
-                                }
-
-                                for (let i = 0; i < right_number + wrong_number; i++) {
-                                    answersIds.push(0);
-                                }
-
-                                for (let i = 0; i < result.length; i++) {
-                                    if (posMask[i] !== -1) {
-                                        answersIds[posMask[i]] = result[i].Answer_id
-                                    }
-                                }
-                            } else {
-                                console.error("Не найдены вопросы у теста преподавателя");
-                            }
-                        }
-                    }
-                );
-
-                for (let i = 0; i < answersIds.length; i++) {
-                    con.query("INSERT INTO student_answer (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Question_id`,`Answer_id`) "
-                        + `VALUES ('${req.body.attempt}','${req.params.id}', '${req.body.testId}', '${req.body.professorId}', '${questionsIds[j]}', '${answersIds[i]}')`,
-                        function (err1) {
-                            if (err1)
-                                console.error(err1);
-                        }
-                    );
-                }
-            }
+        let questionsIds = [];
+        for (let i = 0; i < req.body.number; i++) {
+            questionsIds.push(0);
         }
 
-        setAllFields().then(res.end());
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * Math.floor(max));
+        }
+
+        con.query(`SELECT * FROM question WHERE Professor_id='${req.body.professorId}' AND Test_id='${req.body.testId}'`,
+            function (err, result) {
+                if (err)
+                    console.error(err);
+                else {
+                    if (typeof result[0] != 'undefined') {
+                        let mask = [];
+                        for (let i = 0; i < result.length; i++) {
+                            mask.push(0);
+                        }
+                        let current_number = 0;
+                        while (current_number !== req.body.number) {
+                            for (let i = 0; i < result.length; i++) {
+                                if (current_number !== req.body.number) {
+                                    if (mask[i] === 0 && getRandomInt(result.length / req.body.number + 1) === 0) {
+                                        mask[i] = 1;
+                                        current_number++;
+                                    }
+                                } else
+                                    break;
+                            }
+                        }
+
+                        let posMask = []
+
+                        function isHasPos(randomPos) {
+                            for (let i = 0; i < posMask.length; i++) {
+                                if (posMask[i] === randomPos)
+                                    return true
+                            }
+                            return false
+                        }
+
+                        for (let i = 0; i < result.length; i++) {
+                            if (mask[i] === 1) {
+                                let randomPos = getRandomInt(req.body.number)
+                                while (isHasPos(randomPos)) {
+                                    randomPos = getRandomInt(req.body.number)
+                                }
+                                posMask.push(randomPos)
+                            } else
+                                posMask.push(-1);
+                        }
+
+                        for (let i = 0; i < result.length; i++) {
+                            if (posMask[i] !== -1) {
+                                questionsIds[posMask[i]] = result[i].Question_id
+                            }
+                        }
+
+                        for (let i = 0; i < questionsIds.length; i++) {
+                            con.query("INSERT INTO student_question (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Question_id`) "
+                                + `VALUES ('${req.body.attempt}','${req.params.id}', '${req.body.testId}', '${req.body.professorId}', '${questionsIds[i]}')`,
+                                function (err1) {
+                                    if (err1)
+                                        console.error(err1);
+                                }
+                            );
+                        }
+
+                        for (let j = 0; j < questionsIds.length; j++) {
+                            let answersIds = [];
+
+                            con.query(`SELECT * FROM answer WHERE Professor_id='${req.body.professorId}' AND Test_id='${req.body.testId}'` +
+                                `AND Question_id='${questionsIds[j]}'`,
+                                function (err, result) {
+                                    if (err)
+                                        console.error(err);
+                                    else {
+                                        if (typeof result[0] != 'undefined') {
+                                            let mask = [];
+                                            for (let i = 0; i < result.length; i++) {
+                                                mask.push(1);
+                                            }
+
+                                            let right_number = 0;
+                                            let wrong_number = 0;
+                                            while (right_number < 1 || wrong_number < 1) {
+                                                for (let i = 0; i < mask.length; i++) {
+                                                    mask[i] = 1;
+                                                }
+                                                for (let i = 0; i < result.length; i++) {
+                                                    if (getRandomInt(result.length < 9 ? 11 - result.length : 2) === 0) {
+                                                        mask[i] = 0;
+                                                    } else {
+                                                        if (result[i].Is_correct_answer === 1)
+                                                            right_number++;
+                                                        else
+                                                            wrong_number++;
+                                                    }
+                                                }
+                                            }
+
+                                            let posMask = []
+
+                                            function isHasPos(randomPos) {
+                                                for (let i = 0; i < posMask.length; i++) {
+                                                    if (posMask[i] === randomPos)
+                                                        return true
+                                                }
+                                                return false
+                                            }
+
+                                            for (let i = 0; i < result.length; i++) {
+                                                if (mask[i] === 1) {
+                                                    let randomPos = getRandomInt(right_number + wrong_number)
+                                                    while (isHasPos(randomPos)) {
+                                                        randomPos = getRandomInt(right_number + wrong_number)
+                                                    }
+                                                    posMask.push(randomPos)
+                                                } else
+                                                    posMask.push(-1);
+                                            }
+
+                                            for (let i = 0; i < right_number + wrong_number; i++) {
+                                                answersIds.push(0);
+                                            }
+
+                                            for (let i = 0; i < result.length; i++) {
+                                                if (posMask[i] !== -1) {
+                                                    answersIds[posMask[i]] = result[i].Answer_id
+                                                }
+                                            }
+
+                                            for (let i = 0; i < answersIds.length; i++) {
+                                                con.query("INSERT INTO student_answer (`Attempt_number`,`Student_id`,`Test_id`,`Professor_id`,`Question_id`,`Answer_id`) "
+                                                    + `VALUES ('${req.body.attempt}','${req.params.id}', '${req.body.testId}', '${req.body.professorId}', '${questionsIds[j]}', '${answersIds[i]}')`,
+                                                    function (err1) {
+                                                        if (err1)
+                                                            console.error(err1);
+                                                    }
+                                                );
+                                            }
+                                        } else {
+                                            console.error("Не найдены вопросы у теста преподавателя");
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                    } else {
+                        console.error("Не найдены вопросы у теста преподавателя");
+                    }
+                }
+            }
+        );
+
+        res.end();
     } else {
         res.status(400).json("Не введено количество вопросов в тесте");
     }
@@ -472,46 +461,22 @@ studentsRouter.get('/:id/test/:code/:attempt/question/:numb/answers/info.json', 
 
 studentsRouter.post('/:id/test/:code/:attempt/question/:numb/solve', (req, res) => {
     let answers = req.body.answers;
-    let setAllFields = async function () {
-        let allAnswers = [];
-        con.query(`SELECT * FROM answer` +
-            ` WHERE Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    allAnswers = result;
-                }
+    let allAnswers = [];
+    con.query(`SELECT * FROM answer` +
+        ` WHERE Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                allAnswers = result;
             }
-        );
-
-        for (let i = 0; i < answers.length; i++) {
-            con.query("UPDATE student_answer SET Is_selected_answer" + `='${answers[i].sel}' WHERE Student_id='${req.params.id}'` +
-                ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'` +
-                ` AND Answer_id='${answers[i].id}'`,
-                function (err) {
-                    if (err)
-                        console.error(err);
-                }
-            );
         }
+    );
 
-        let f = true;
-        for (let i = 0; i < allAnswers.length; i++) {
-            for (let j = 0; j < answers.length; j++) {
-                if (allAnswers[i].Answer_id === answers[j].id) {
-                    if ((allAnswers[i].Is_correct_answer && !answers[j].sel) || (!allAnswers[i].Is_correct_answer && answers[j].sel)) {
-                        f = false;
-                        break;
-                    }
-                }
-            }
-            if (!f)
-                break;
-        }
-
-        con.query("UPDATE student_question SET Is_correct_answer_to_question" + `='${f}' WHERE Student_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'`,
+    for (let i = 0; i < answers.length; i++) {
+        con.query("UPDATE student_answer SET Is_selected_answer" + `='${answers[i].sel ? 1 : 0}' WHERE Student_id='${req.params.id}'` +
+            ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'` +
+            ` AND Answer_id='${answers[i].id}'`,
             function (err) {
                 if (err)
                     console.error(err);
@@ -519,7 +484,29 @@ studentsRouter.post('/:id/test/:code/:attempt/question/:numb/solve', (req, res) 
         );
     }
 
-    setAllFields().then(res.end());
+    let f = true;
+    for (let i = 0; i < allAnswers.length; i++) {
+        for (let j = 0; j < answers.length; j++) {
+            if (allAnswers[i].Answer_id === answers[j].id) {
+                if ((allAnswers[i].Is_correct_answer === 1 && !answers[j].sel) || (allAnswers[i].Is_correct_answer === 0 && answers[j].sel)) {
+                    f = false;
+                    break;
+                }
+            }
+        }
+        if (!f)
+            break;
+    }
+
+    con.query("UPDATE student_question SET Is_correct_answer_to_question" + `='${f ? 1 : 0}' WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'`,
+        function (err) {
+            if (err)
+                console.error(err);
+        }
+    );
+
+    res.end();
 });
 
 studentsRouter.post('/:id/test/:code/:attempt/solve', (req, res) => {

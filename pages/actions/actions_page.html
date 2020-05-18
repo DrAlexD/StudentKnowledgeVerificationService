@@ -32,6 +32,10 @@
                     }
                 }
 
+                if (resText.type === "admin") {
+                    document.getElementById('addTestPageButton').hidden = true;
+                }
+
                 let addTestButton = document.getElementById('addTestPageButton');
                 addTestButton.onclick = function () {
                     window.location.href = `/professor/${resText.id}/add/test`;
@@ -58,14 +62,14 @@
                    value="Добавить студента"/>
             <input id="studentsPageButton" onclick="window.location.href = '/students'" type="button" value="Студенты"/>
         </div>
-        <div style="margin-bottom: 15px">
+        <div style="margin-bottom: 10px">
             <input id="addProfessorPageButton" onclick="window.location.href = '/add/professor'" type="button"
                    value="Добавить преподавателя"/>
             <input id="professorsPageButton" onclick="window.location.href = '/professors';" type="button"
                    value="Преподаватели"/>
         </div>
         <div style="margin-bottom: 15px">
-            <input id="addTestPageButton" onclick="window.location.href = '/add/professor'" type="button"
+            <input id="addTestPageButton" type="button"
                    value="Добавить тест"/>
             <input id="testsPageButton" onclick="window.location.href = '/tests';" type="button"
                    value="Тесты"/>

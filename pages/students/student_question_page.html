@@ -16,7 +16,7 @@
                 let response = await fetch(`/session/info.json`);
                 let resTextSession = await response.json();
 
-                if (resTextSession.type === "student" && resTextSession.id !== locId) {
+                if (resTextSession.type === "student" && resTextSession.id !== parseInt(locId, 10)) {
                     window.location.href = `/student/${resTextSession.id}`;
                 }
 
@@ -25,7 +25,7 @@
 
                 let questNumb = 0;
                 for (let i = 0; i < resTextQuests.length; i++) {
-                    if (resTextQuests[i].Question_id === locNumb) {
+                    if (resTextQuests[i].Question_id === parseInt(locNumb, 10)) {
                         questNumb = i + 1;
                         break;
                     }
@@ -50,44 +50,45 @@
                 let resTextTest = await response.json();
 
                 response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/question/${locNumb}/answers/info.json`);
-                let resTextAnswers = await response.json();
+                let resTextAnswers;
 
                 if (response.ok) {
+                    resTextAnswers = await response.json();
                     document.getElementById('answersTable').hidden = false;
                     let answersLines = document.getElementById('answersLines');
                     answersLines.innerHTML = "";
                     let isDisabled;
                     if (resTextSession.type === "student")
-                        isDisabled = resTextTest.Number_of_correct_answers !== "" ? "disabled" : "";
+                        isDisabled = resTextTest.Number_of_correct_answers !== null ? "disabled" : "";
                     else
                         isDisabled = "disabled";
                     for (let i = 0; i < resTextAnswers.length; i++) {
                         let response2 = await fetch(`/professor/${resTextQuests[0].Professor_id}/test/${locCode}/` +
                             `question/${locNumb}/answer/${resTextAnswers[i].Answer_id}/info.json`);
                         let resText2 = await response2.json();
-                        let isSelected = resTextAnswers[i].Is_selected_answer ? "checked" : "";
+                        let isSelected = resTextAnswers[i].Is_selected_answer === 1 ? "checked" : "";
                         let color;
                         if (resTextSession.type === "student") {
-                            if (resTextTest.Number_of_correct_answers !== "" && resText2.Is_correct_answer) {
-                                if (resTextAnswers[i].Is_selected_answer)
-                                    color = "green"
+                            if (resTextTest.Number_of_correct_answers !== null && resText2.Is_correct_answer === 1) {
+                                if (resTextAnswers[i].Is_selected_answer === 1)
+                                    color = "lightgreen"
                                 else
-                                    color = "red"
+                                    color = "lightpink"
                             } else
-                                color = "black"
+                                color = "beige"
                         } else {
-                            if (resText2.Is_correct_answer) {
-                                if (resTextAnswers[i].Is_selected_answer)
-                                    color = "green"
+                            if (resText2.Is_correct_answer === 1) {
+                                if (resTextAnswers[i].Is_selected_answer === 1)
+                                    color = "lightgreen"
                                 else
-                                    color = "red"
+                                    color = "lightpink"
                             } else
-                                color = "black"
+                                color = "beige"
                         }
-                        answersLines.innerHTML += `<span style="color: ${color}; "><tr>\n` +
-                            `                <td>\n<input autocomplete="off" style="margin-right: 35px" ${isSelected} ${isDisabled} type="checkbox"/> </td>\n` +
+                        answersLines.innerHTML += `<tr bgcolor="${color}">\n` +
+                            `                <td>\n<input autocomplete="off" ${isSelected} ${isDisabled} type="checkbox"/> </td>\n` +
                             `                <td >${resText2.Answer_text}</td>\n` +
-                            "            </tr></span>";
+                            "            </tr>";
                     }
                 }
 
@@ -110,7 +111,7 @@
 
                             let correct_answers = 0;
                             for (let i = 0; i < resText.length; i++) {
-                                if (resText[i].Is_correct_answer_to_question)
+                                if (resText[i].Is_correct_answer_to_question === 1)
                                     correct_answers++;
                             }
 
@@ -148,6 +149,7 @@
                         }
                         answers.push(answer);
                     }
+
                     let questionData = {
                         answers: answers
                     };
@@ -180,7 +182,7 @@
         <div style="margin-bottom: 10px">
             <label id="questionText"></label>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 15px">
+        <table bgcolor="beige" hidden id="answersTable" style="text-align:center; margin-bottom: 15px">
             <thead>
             <tr>
                 <th>Выбор</th>

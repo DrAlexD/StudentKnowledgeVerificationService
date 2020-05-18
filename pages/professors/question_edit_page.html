@@ -5,19 +5,46 @@
     <title>Редактировать вопрос</title>
     <script>
         "use strict";
+
+        let numberOfAnswersQuestionEditPage;
+        let answersIdsQuestionEditPage = [];
+
+        let deleteLineQuestionEditPage = async function (elem) {
+            let ell = elem.closest("tr");
+            ell.parentElement.removeChild(ell);
+            numberOfAnswersQuestionEditPage--;
+            if (numberOfAnswersQuestionEditPage === 0) {
+                document.getElementById('answersTable').hidden = true;
+            }
+        }
+
+        let deleteAnswerQuestionEditPage = async function (locId2, locCode2, locNumb2, answer_id2, elem) {
+            try {
+                await fetch(`/professor/${locId2}/test/${locCode2}/question/${locNumb2}/answer/${answer_id2}/delete`);
+                let ell = elem.closest("tr");
+                ell.parentElement.removeChild(ell);
+                answersIdsQuestionEditPage.splice(answersIdsQuestionEditPage.indexOf(answer_id2, 0), 1);
+                numberOfAnswersQuestionEditPage--;
+                if (numberOfAnswersQuestionEditPage === 0) {
+                    document.getElementById('answersTable').hidden = true;
+                }
+            } catch (err) {
+                alert(err);
+            }
+
+        }
+
         window.onload = async function () {
             try {
-                let number_of_answers = 0;
                 let loc = window.location.href.split("/");
-                let locId = loc[loc.length - 5];
-                let locCode = loc[loc.length - 3];
-                let locNumb = loc[loc.length - 1];
-                let answers_ids = [];
+                let locId = loc[loc.length - 6];
+                let locCode = loc[loc.length - 4];
+                let locNumb = loc[loc.length - 2];
 
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.type === "student" || (resText.type === "professor" && locId !== resText.id)) {
+                if (resText.type === "student" || (resText.type === "professor" && resText.id !== parseInt(locId, 10))) {
                     window.location.href = `/professor/${locId}/test/${locCode}`;
                 }
 
@@ -29,72 +56,103 @@
 
                 response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/answers/info.json`);
 
-                let deleteAnswer = async function (locId2, locCode2, locNumb2, answers_ids2, answer_id2) {
-                    try {
-                        await fetch(`/professor/${locId2}/test/${locCode2}/question/${locNumb2}/answer/${answer_id2}/delete`);
-                        let ell = this.closest("tr");
-                        ell.parentElement.removeChild(ell);
-                        answers_ids.splice(answers_ids.indexOf(answer_id2, 0), 1);
-                        number_of_answers--;
-                    } catch (err) {
-                        alert(err);
-                    }
-                }
-
                 if (response.ok) {
                     resText = await response.json();
-                    number_of_answers = resText.length;
+                    numberOfAnswersQuestionEditPage = resText.length;
                     document.getElementById('answersTable').hidden = false;
                     let answersButtons = document.getElementById('answers');
                     answersButtons.innerHTML = "";
                     for (let i = 0; i < resText.length; i++) {
-                        answers_ids.push(resText[i].Answer_id);
-                        let is_correct = resText[i].Is_correct_answer ? "checked" : "";
+                        answersIdsQuestionEditPage.push(resText[i].Answer_id);
+                        let is_correct = resText[i].Is_correct_answer === 1 ? "checked" : "";
                         answersButtons.innerHTML += "<tr>\n" +
                             "                <td>\n" +
-                            `                    <input autocomplete="off" id="is_correct_answer" ${is_correct} style="margin-right: 35px" type="checkbox"/>` +
+                            `                    <input autocomplete="off" id="is_correct_answer" ${is_correct} type="checkbox"/>` +
                             "                </td>\n" +
                             "                <td>\n" +
-                            `                    <input autocomplete="off" id="answer_text" value='${resText[i].Answer_text}' style="margin-right: 35px" type="text"/>` +
+                            `                    <input autocomplete="off" id="answer_text" value='${resText[i].Answer_text}' type="text"/>` +
                             "                </td>\n" +
                             "                <td><input type='button' value='Удалить'\n" +
-                            `                           onclick="${await deleteAnswer(locId, locCode, locNumb, answers_ids, resText[i].Answer_id)}"/></td>\n` +
+                            `                           onclick="deleteAnswerQuestionEditPage(${locId}, ${locCode}, ${locNumb}, ${resText[i].Answer_id},this);"/></td>\n` +
                             "            </tr>";
                     }
                 }
 
-                let deleteLine = async function () {
-                    let ell = this.closest("tr");
-                    ell.parentElement.removeChild(ell);
-                    number_of_answers--;
-                }
+                let inputs = document.getElementsByTagName('input');
+                let setAnswers = async function () {
+                    let answers = [];
+                    let answer = {};
+                    for (let i = 1, j = 0; i < inputs.length - 3; i++) {
+                        if (i % 3 === 1) {
+                            answer = {};
+                            answer.is_correct_answer = inputs[i].checked;
+                        } else if (i % 3 === 2) {
+                            answer.text = inputs[i].value;
+                            if (j < answersIdsQuestionEditPage.length) {
+                                answer.id = answersIdsQuestionEditPage[j];
+                                j++;
+                            }
+                            answers.push(answer);
+                        }
+                    }
+                    return answers;
+                };
 
                 let addAnswerButton = document.getElementById('addAnswerButton');
                 addAnswerButton.onclick = async function () {
                     let answersButtons = document.getElementById('answers');
-                    if (number_of_answers === 0) {
+                    if (numberOfAnswersQuestionEditPage === 0) {
                         document.getElementById('answersTable').hidden = false;
-                        answersButtons.innerHTML = "";
+                    }
+                    numberOfAnswersQuestionEditPage++;
+                    let ans = await setAnswers();
+                    answersButtons.innerHTML = "";
+                    let oldAns = 0;
+                    for (let i = 0; i < ans.length; i++) {
+                        let checked = ans[i].is_correct_answer ? "checked" : "";
+                        if (oldAns < answersIdsQuestionEditPage.length) {
+                            answersButtons.innerHTML += "<tr>\n" +
+                                "                <td>\n" +
+                                `                    <input autocomplete="off" id="is_correct_answer" type="checkbox" ${checked}/>` +
+                                "                </td>\n" +
+                                "                <td>\n" +
+                                `                    <input autocomplete="off" id="answer_text" type="text" value='${ans[i].text}'/>` +
+                                "                </td>\n" +
+                                "                <td><input type='button' value='Удалить'\n" +
+                                `                           onclick="deleteAnswerQuestionEditPage(${locId}, ${locCode}, ${locNumb}, ${ans[i].id},this);"/></td>\n` +
+                                "            </tr>";
+                            oldAns++;
+                        } else {
+                            answersButtons.innerHTML += "<tr>\n" +
+                                "                <td>\n" +
+                                `                    <input autocomplete="off" id="is_correct_answer" type="checkbox" ${checked}/>` +
+                                "                </td>\n" +
+                                "                <td>\n" +
+                                `                    <input autocomplete="off" id="answer_text" type="text" value='${ans[i].text}'/>` +
+                                "                </td>\n" +
+                                "                <td><input type='button' value='Удалить'\n" +
+                                `                           onclick="deleteLineQuestionEditPage(this)"/></td>\n` +
+                                "            </tr>";
+                        }
                     }
                     answersButtons.innerHTML += "<tr>\n" +
                         "                <td>\n" +
-                        `                    <input autocomplete="off" id="is_correct_answer" style="margin-right: 35px" type="checkbox"/>` +
+                        `                    <input autocomplete="off" id="is_correct_answer" type="checkbox"/>` +
                         "                </td>\n" +
                         "                <td>\n" +
-                        `                    <input autocomplete="off" id="answer_text" style="margin-right: 35px" type="text"/>` +
+                        `                    <input autocomplete="off" id="answer_text" type="text"/>` +
                         "                </td>\n" +
                         "                <td><input type='button' value='Удалить'\n" +
-                        `                           onclick="${await deleteLine()}"/></td>\n` +
+                        `                           onclick="deleteLineQuestionEditPage(this)"/></td>\n` +
                         "            </tr>";
-                    number_of_answers++;
                 };
 
-                let inputs = document.getElementsByTagName('input');
                 let saveButton = document.getElementById('saveButton');
                 saveButton.onclick = async function () {
                     let addNewAnswers = async function () {
-                        if (number_of_answers > answers_ids.length) {
-                            for (let i = 1; i < 1 + 2 * (number_of_answers - answers_ids.length); i += 2) {
+                        if (numberOfAnswersQuestionEditPage > answersIdsQuestionEditPage.length) {
+                            let ids = [];
+                            for (let i = 1 + 3 * answersIdsQuestionEditPage.length; i < inputs.length - 3; i += 3) {
                                 let answerData = {
                                     is_correct_answer: inputs[i].checked,
                                     text: inputs[i + 1].value,
@@ -107,36 +165,23 @@
                                 };
 
                                 response = await fetch(`/professor/${locId}/test/${locCode}/question/${locNumb}/add/answer`, options);
+                                resText = await response.json();
 
-                                if (!response.ok) {
-                                    resText = await response.json();
+                                if (response.ok) {
+                                    ids.push(resText.Answer_id);
+                                } else {
                                     alert(resText);
                                 }
                             }
+                            return ids;
                         }
                     }
 
-                    await addNewAnswers();
-
-                    let setAnswers = async function () {
-                        let answers = [];
-                        let answer = {};
-                        for (let i = 1 + (number_of_answers - answers_ids.length) * 2, j = 0; i < inputs.length; i++) {
-                            if (i % 2 === 1)
-                                answer["is_correct_answer"] = inputs[i].checked;
-                            else {
-                                answer["text"] = inputs[i].value;
-                                answer["id"] = answers_ids[j];
-                                j++;
-                                answers.push(answer);
-                            }
-                        }
-                        return answers;
-                    }
+                    answersIdsQuestionEditPage = answersIdsQuestionEditPage.concat(await addNewAnswers());
 
                     let questionData = {
                         text: inputs[0].value === qt ? "" : inputs[0].value,
-                        answers: setAnswers()
+                        answers: await setAnswers()
                     };
 
                     let options = {
@@ -168,10 +213,10 @@
     <form name="edit question">
         <div style="margin-bottom: 5px">
             <label for="questionText">Текст вопроса</label> <input autocomplete="off" id="questionText"
-                                                                   style="margin-right: 200px"
+                                                                   style="margin-right: 104px"
                                                                    type="text"/>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 5px" width="300px">
+        <table bgcolor="beige" hidden id="answersTable" style="text-align:center; margin-bottom: 5px">
             <thead>
             <tr>
                 <th>Верный ответ?</th>
@@ -187,7 +232,7 @@
         </div>
         <div>
             <input id="backButton" type="button" value="Назад"/>
-            <input id="saveButton" type="button" value="Добавить"/>
+            <input id="saveButton" type="button" value="Редактировать"/>
         </div>
     </form>
 </div>

@@ -5,9 +5,20 @@
     <title>Добавить вопрос</title>
     <script>
         "use strict";
+
+        let numberAnswersAddQuestionPage = 0;
+
+        let deleteAnswerAddQuestionPage = async function (elem) {
+            let ell = elem.closest("tr");
+            ell.parentElement.removeChild(ell);
+            numberAnswersAddQuestionPage--;
+            if (numberAnswersAddQuestionPage === 0) {
+                document.getElementById('answersTable').hidden = true;
+            }
+        }
+
         window.onload = async function () {
             try {
-                let number_of_answers = 0;
                 let loc = window.location.href.split("/");
                 let locId = loc[loc.length - 5];
                 let locCode = loc[loc.length - 3];
@@ -15,57 +26,65 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.type === "student" || (resText.type === "professor" && locId !== resText.id)) {
+                if (resText.type === "student" || (resText.type === "professor" && resText.id !== parseInt(locId, 10))) {
                     window.location.href = `/professor/${locId}/test/${locCode}`;
                 }
+
+                let inputs = document.getElementsByTagName('input');
+                let setAnswers = async function () {
+                    let answers = [];
+                    let answer = {};
+                    for (let i = 1; i < inputs.length - 3; i++) {
+                        if (i % 3 === 1) {
+                            answer = {};
+                            answer.is_correct_answer = inputs[i].checked;
+                        } else if (i % 3 === 2) {
+                            answer.text = inputs[i].value;
+                            answers.push(answer);
+                        }
+                    }
+                    return answers;
+                };
 
                 let addAnswerButton = document.getElementById('addAnswerButton');
                 addAnswerButton.onclick = async function () {
                     let answersButtons = document.getElementById('answers');
-                    if (number_of_answers === 0) {
+                    if (numberAnswersAddQuestionPage === 0) {
                         document.getElementById('answersTable').hidden = false;
-                        answersButtons.innerHTML = "";
+                    }
+                    numberAnswersAddQuestionPage++;
+                    let ans = await setAnswers();
+                    answersButtons.innerHTML = "";
+                    for (let i = 0; i < ans.length; i++) {
+                        let checked = ans[i].is_correct_answer ? "checked" : "";
+                        answersButtons.innerHTML += "<tr>\n" +
+                            "                <td>\n" +
+                            `                    <input autocomplete="off" id="is_correct_answer" type="checkbox" ${checked}/>` +
+                            "                </td>\n" +
+                            "                <td>\n" +
+                            `                    <input autocomplete="off" id="answer_text" type="text" value='${ans[i].text}'/>` +
+                            "                </td>\n" +
+                            "                <td><input type='button' value='Удалить'\n" +
+                            `                           onclick="deleteAnswerAddQuestionPage(this);"/></td>\n` +
+                            "            </tr>";
                     }
                     answersButtons.innerHTML += "<tr>\n" +
                         "                <td>\n" +
-                        `                    <input autocomplete="off" id="is_correct_answer" style="margin-right: 35px" type="checkbox"/>` +
+                        `                    <input autocomplete="off" id="is_correct_answer" type="checkbox"/>` +
                         "                </td>\n" +
                         "                <td>\n" +
-                        `                    <input autocomplete="off" id="answer_text" style="margin-right: 35px" type="text"/>` +
+                        `                    <input autocomplete="off" id="answer_text" type="text"/>` +
                         "                </td>\n" +
                         "                <td><input type='button' value='Удалить'\n" +
-                        `                           onclick="${await deleteAnswer()}"/></td>\n` +
+                        `                           onclick="deleteAnswerAddQuestionPage(this);"/></td>\n` +
                         "            </tr>";
-                    number_of_answers++;
                 };
-
-                let deleteAnswer = async function () {
-                    let ell = this.closest("tr");
-                    ell.parentElement.removeChild(ell);
-                    number_of_answers--;
-                }
-
-                let inputs = document.getElementsByTagName('input');
 
                 let addQuestionButton = document.getElementById('addQuestionButton');
                 addQuestionButton.onclick = async function () {
-                    let setAnswers = async function () {
-                        let answers = [];
-                        let answer = {};
-                        for (let i = 1; i < inputs.length; i++) {
-                            if (i % 2 === 1)
-                                answer["is_correct_answer"] = inputs[i].checked;
-                            else {
-                                answer["text"] = inputs[i].value;
-                                answers.push(answer);
-                            }
-                        }
-                        return answers;
-                    }
-
                     let questionData = {
                         text: inputs[0].value,
-                        answers: setAnswers()
+                        answers: await setAnswers()
                     };
 
                     let options = {
@@ -101,10 +120,10 @@
     <h2> Добавить вопрос </h2>
     <form name="add question">
         <div style="margin-bottom: 5px">
-            <label for="text">Текст вопроса</label> <input autocomplete="off" id="text" style="margin-right: 200px"
+            <label for="text">Текст вопроса</label> <input autocomplete="off" id="text" style="margin-right: 104px"
                                                            type="text"/>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 5px" width="300px">
+        <table bgcolor="beige" hidden id="answersTable" style="text-align:center; margin-bottom: 5px">
             <thead>
             <tr>
                 <th>Верный ответ?</th>

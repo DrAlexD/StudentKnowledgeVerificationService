@@ -18,7 +18,7 @@
                 }
 
                 if (resText.type === "professor") {
-                    if (resText.id !== locId) {
+                    if (resText.id !== parseInt(locId, 10)) {
                         window.location.href = `/professor/${locId}`;
                     }
                     document.getElementById("firstName").disabled = true;
@@ -79,18 +79,18 @@
     <form name="professor edit">
         <div style="margin-bottom: 5px">
             <label for="firstName">Имя</label> <input autocomplete="off" autofocus id="firstName"
-                                                      style="margin-right: 30px" type="text"/>
+                                                      style="margin-right: 32px" type="text"/>
         </div>
         <div style="margin-bottom: 10px">
-            <label for="secondName">Фамилия</label> <input autocomplete="off" id="secondName" style="margin-right: 64px"
+            <label for="secondName">Фамилия</label> <input autocomplete="off" id="secondName" style="margin-right: 66px"
                                                            type="text"/>
         </div>
         <div style="margin-bottom: 5px">
-            <label for="login">Логин</label> <input autocomplete="off" id="login" style="margin-right: 40px"
+            <label for="login">Логин</label> <input autocomplete="off" id="login" style="margin-right: 48px"
                                                     type="text"/>
         </div>
         <div style="margin-bottom: 15px">
-            <label for="password">Пароль</label> <input autocomplete="off" id="password" style="margin-right:48px"
+            <label for="password">Пароль</label> <input autocomplete="off" id="password" style="margin-right:56px"
                                                         type="password"/>
         </div>
         <div>

@@ -19,7 +19,7 @@
                     window.location.href = `/professor/${locId}/test/${locCode}`;
                 }
 
-                if (resText.type === "professor" && resText.id !== locId) {
+                if (resText.type === "professor" && resText.id !== parseInt(locId, 10)) {
                     document.getElementById("editButton").hidden = true;
                     document.getElementById("deleteButton").hidden = true;
                 }
@@ -37,8 +37,12 @@
                     let answersLines = document.getElementById('answersLines');
                     answersLines.innerHTML = "";
                     for (let i = 0; i < resText.length; i++) {
-                        let is_correct = resText[i].Is_correct_answer ? "true" : "false";
-                        answersLines.innerHTML += `<tr aria-checked='${is_correct}'>\n` +
+                        let color;
+                        if (resText[i].Is_correct_answer === 1)
+                            color = "lightgreen"
+                        else
+                            color = "beige"
+                        answersLines.innerHTML += `<tr bgcolor="${color}">\n` +
                             `                <td>${resText[i].Answer_text}</td>\n` +
                             "            </tr>";
                     }
@@ -77,7 +81,7 @@
         <div style="margin-bottom: 10px">
             <label id="questionText"></label>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="answersTable" style="text-align:center; margin-bottom: 15px">
+        <table bgcolor="beige" hidden id="answersTable" style="text-align:center; margin-bottom: 15px">
             <thead>
             <tr>
                 <th>Варианты ответа</th>

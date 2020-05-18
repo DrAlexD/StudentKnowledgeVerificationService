@@ -11,17 +11,17 @@
                 let locId = loc[loc.length - 1];
 
                 let response = await fetch(`/session/info.json`);
-                let resText = await response.json();
+                let resTextSession = await response.json();
 
-                if (resText.type === "student") {
+                if (resTextSession.type === "student") {
                     document.getElementById("addTestButton").hidden = true;
                     document.getElementById("deleteButton").hidden = true;
                     document.getElementById("editButton").hidden = true;
                     document.getElementById("logOutButton").hidden = true;
                 }
 
-                if (resText.type === "professor") {
-                    if (resText.id !== locId) {
+                if (resTextSession.type === "professor") {
+                    if (resTextSession.id !== parseInt(locId, 10)) {
                         document.getElementById("addTestButton").hidden = true;
                         document.getElementById("editButton").hidden = true;
                         document.getElementById("logOutButton").hidden = true;
@@ -29,12 +29,13 @@
                     document.getElementById("deleteButton").hidden = true;
                 }
 
-                if (resText.type === "admin") {
+                if (resTextSession.type === "admin") {
+                    document.getElementById("addTestButton").hidden = true;
                     document.getElementById("logOutButton").hidden = true;
                 }
 
                 response = await fetch(`/professor/${locId}/info.json`);
-                resText = await response.json();
+                let resText = await response.json();
 
                 document.getElementById("firstName").innerText = resText.First_name;
                 document.getElementById("secondName").innerText = resText.Second_name;
@@ -69,7 +70,10 @@
 
                 let backButton = document.getElementById('backButton');
                 backButton.onclick = function () {
-                    window.location.href = `/professors`;
+                    if (resTextSession.type === "professor" && resTextSession.id === parseInt(locId, 10))
+                        window.location.href = `/actions`;
+                    else
+                        window.location.href = `/professors`;
                 };
 
                 let deleteButton = document.getElementById('deleteButton');
@@ -101,12 +105,12 @@
 
 <body>
 <div align="center" style="margin-top: 100px">
-    <h2> Преподаватель </h2>
+    <h2> Страница преподавателя </h2>
     <form name="professor">
         <div style="margin-bottom: 10px">
             <label id="firstName"></label> <label id="secondName"></label>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="testsTable" style="text-align:center; margin-bottom: 5px">
+        <table bgcolor="beige" hidden id="testsTable" style="text-align:center; margin-bottom: 5px">
             <thead>
             <tr>
                 <th>Предмет</th>
@@ -119,7 +123,7 @@
             </tbody>
         </table>
         <div style="margin-bottom: 15px">
-        <input id="addTestButton" type="button" value="Добавить тест"/>
+            <input id="addTestButton" type="button" value="Добавить тест"/>
         </div>
         <div style="margin-bottom: 10px">
             <input id="logOutButton" type="button" value="Выйти"/>

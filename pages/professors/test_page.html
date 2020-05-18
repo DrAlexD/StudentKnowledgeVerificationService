@@ -21,7 +21,7 @@
                     document.getElementById("editButton").hidden = true;
                 }
 
-                if (resTextSession.type === "professor" && locId !== resTextSession.id) {
+                if (resTextSession.type === "professor" && resTextSession.id !== parseInt(locId, 10)) {
                     document.getElementById("addQuestionButton").hidden = true;
                     document.getElementById("deleteButton").hidden = true;
                     document.getElementById("editButton").hidden = true;
@@ -70,10 +70,11 @@
                         solveTestButton.hidden = true;
                         document.getElementById('questNumb').hidden = false;
                         let response3 = await fetch(`/student/${resTextSession.id}/tests/info.json`);
-                        let resText3 = await response3.json();
+
                         if (response3.ok) {
+                            let resText3 = await response3.json();
                             for (let j = 0; j < resText3.length; j++) {
-                                if (resText3[j].Test_id === locCode && resText3[j].Attempt_number > attempt)
+                                if (resText3[j].Test_id === parseInt(locCode,10) && resText3[j].Attempt_number > attempt)
                                     attempt = resText3[j].Attempt_number;
                             }
                         }
@@ -85,14 +86,13 @@
                 let suggestButton = document.getElementById('suggestButton');
                 suggestButton.onclick = async function () {
                     let number = document.getElementById("numberQuestions");
-                    
+
                     let testData = {
-                        studentId: resTextSession.id,
                         attempt: attempt,
                         testId: locCode,
                         professorId: locId,
                         createdById: 0,
-                        number: number.value
+                        number: parseInt(number.value, 10)
                     };
 
                     let options = {
@@ -101,20 +101,18 @@
                         body: JSON.stringify(testData)
                     };
 
-                    if (number.value !== "") {
-                        if (number.value > 4) {
-                            if (number.value <= totalNumberQuestions) {
-                                let response = await fetch(`/student/${resTextSession.id}/add/test`, options);
-                                let resText = await response.json();
+                    if (number.value !== "" || number.value !== "0") {
+                        if (number.value <= totalNumberQuestions) {
+                            let response = await fetch(`/student/${resTextSession.id}/add/test`, options);
 
-                                if (response.ok)
-                                    window.location.href = `/student/${resTextSession.id}/test/${locCode}/${attempt}`;
-                                else
-                                    alert(resText);
-                            } else
-                                alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                            if (response.ok)
+                                window.location.href = `/student/${resTextSession.id}/test/${locCode}/${attempt}`;
+                            else {
+                                let resText = await response.json();
+                                alert(resText);
+                            }
                         } else
-                            alert("Нельзя создать тест меньше чем с 5 вопросами")
+                            alert("Нельзя выбрать больше вопросов, чем есть в тесте")
                     } else
                         alert("Не введено количество вопросов")
                 };
@@ -166,13 +164,12 @@
             <input id="solveTestButton" type="button"/>
         </div>
         <div id="questNumb" hidden style="margin-bottom: 10px">
-            <label for="numberQuestions">Количество вопросов в тесте </label> <input autocomplete="off" autofocus
-                                                                                     id="numberQuestions"
-                                                                                     style="margin-right: 20px"
-                                                                                     type="text"/>
-            <input id="suggestButton" type="button" value="Подтвердить"/>
+            <label for="numberQuestions">Количество вопросов в тесте</label> <input autocomplete="off" autofocus
+                                                                                    id="numberQuestions"
+                                                                                    type="number"/>
+            <input id="suggestButton" type="button" value="Подтвердить" style="margin-right: 100px"/>
         </div>
-        <table bgcolor="#f0f8ff" hidden id="questionsTable" style="text-align:center; margin-bottom: 5px">
+        <table bgcolor="beige" hidden id="questionsTable" style="text-align:center; margin-bottom: 5px">
             <thead>
             <tr>
                 <th>Вопросы</th>

@@ -5,6 +5,20 @@
     <title>Выбор теста</title>
     <script>
         "use strict";
+
+        let attemptAddTestToStudentPage;
+        let testIdAddTestToStudentPage;
+        let professorIdAddTestToStudentPage;
+        let totalNumberQuestionsAddTestToStudentPage;
+
+        let addStudentTest = async function (testId2, professorId2, attempt2, totalNumberQuestions2) {
+            document.getElementById('questions').hidden = false;
+            attemptAddTestToStudentPage = attempt2;
+            testIdAddTestToStudentPage = testId2;
+            professorIdAddTestToStudentPage = professorId2;
+            totalNumberQuestionsAddTestToStudentPage = totalNumberQuestions2;
+        }
+
         window.onload = async function () {
             try {
                 let loc = window.location.href.split("/");
@@ -14,11 +28,12 @@
                 let resTextSession = await response.json();
                 let resText;
 
-                if (resTextSession.type === "student" && resTextSession.id !== locId) {
+                if (resTextSession.type === "student" && resTextSession.id !== parseInt(locId, 10)) {
                     window.location.href = `/student/${resTextSession.id}`;
                 }
 
                 let getAllTests = async function () {
+                    document.getElementById('table').hidden = false;
                     response = await fetch(`/tests/all.json`);
                     resText = await response.json();
 
@@ -30,24 +45,27 @@
                             let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
                             let resText2 = await response2.json();
                             let response3 = await fetch(`/student/${locId}/tests/info.json`);
-                            let resText3 = await response3.json();
                             let attempt = 0;
                             if (response3.ok) {
+                                let resText3 = await response3.json();
                                 for (let j = 0; j < resText3.length; j++) {
                                     if (resText3[j].Test_id === resText[i].Test_id && resText3[j].Attempt_number > attempt)
                                         attempt = resText3[j].Attempt_number;
                                 }
                             }
                             attempt++;
+                            let name = resText2.First_name + " " + resText2.Second_name;
+                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                name = "Я";
                             testsTable.innerHTML += "<tr>\n" +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
                                 `                <td>${resText[i].Title}</td>\n` +
-                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td>${name}</td>\n` +
                                 `                <td>${resText[i].Total_number_of_questions}</td>\n` +
                                 `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
                                 `                <td><input type='button' value='Выбрать'\n` +
-                                `                           onclick="${await addStudentTest(resText[i].Test_id,
-                                    resText[i].Professor_id, attempt, resText[i].Total_number_of_questions)}"/></td>\n` +
+                                `                           onclick="addStudentTest(${resText[i].Test_id},
+                                    ${resText[i].Professor_id}, ${attempt}, ${resText[i].Total_number_of_questions})"/></td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -84,45 +102,36 @@
                             let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
                             let resText2 = await response2.json();
                             let response3 = await fetch(`/student/${locId}/tests/info.json`);
-                            let resText3 = await response3.json();
                             let attempt = 0;
                             if (response3.ok) {
+                                let resText3 = await response3.json();
                                 for (let j = 0; j < resText3.length; j++) {
                                     if (resText3[j].Test_id === resText[i].Test_id && resText3[j].Attempt_number > attempt)
                                         attempt = resText3[j].Attempt_number;
                                 }
                             }
                             attempt++;
+                            let name = resText2.First_name + " " + resText2.Second_name;
+                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                name = "Я";
                             testsTable.innerHTML += "<tr>\n" +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
                                 `                <td>${resText[i].Title}</td>\n` +
-                                `                <td>${resText2[i].First_name} ${resText2[i].Second_name}</td>\n` +
+                                `                <td>${name}</td>\n` +
                                 `                <td>${resText[i].Total_number_of_questions}</td>\n` +
                                 `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
                                 `                <td><input type='button' value='Выбрать'\n` +
-                                `                           onclick="${await addStudentTest(resText[i].Test_id,
-                                    resText[i].Professor_id, attempt, resText[i].Total_number_of_questions)}"/></td>\n` +
+                                `                           onclick="addStudentTest(${resText[i].Test_id},
+                                    ${resText[i].Professor_id}, ${attempt}, ${resText[i].Total_number_of_questions})"/></td>\n` +
                                 "            </tr>";
                         }
                     } else
                         alert(resText);
                 };
 
-                let attempt;
-                let testId;
-                let professorId;
-                let totalNumberQuestions;
                 let createdById = 0;
                 if (resTextSession.type === "professor") {
                     createdById = resTextSession.id;
-                }
-
-                let addStudentTest = async function (testId2, professorId2, attempt2, totalNumberQuestions2) {
-                    document.getElementById('questions').hidden = false;
-                    attempt = attempt2;
-                    testId = testId2;
-                    professorId = professorId2;
-                    totalNumberQuestions = totalNumberQuestions2;
                 }
 
                 let suggestButton = document.getElementById('suggestButton');
@@ -130,12 +139,11 @@
                     let number = document.getElementById("numberQuestions");
 
                     let testData = {
-                        studentId: locId,
-                        attempt: attempt,
-                        testId: testId,
-                        professorId: professorId,
+                        attempt: attemptAddTestToStudentPage,
+                        testId: testIdAddTestToStudentPage,
+                        professorId: professorIdAddTestToStudentPage,
                         createdById: createdById,
-                        number: number.value
+                        number: parseInt(number.value, 10)
                     };
 
                     let options = {
@@ -144,20 +152,18 @@
                         body: JSON.stringify(testData)
                     };
 
-                    if (number.value !== "") {
-                        if (number.value > 4) {
-                            if (number.value <= totalNumberQuestions) {
-                                let response = await fetch(`/student/${locId}/add/test`, options);
-                                let resText = await response.json();
+                    if (number.value !== "" || number.value !== "0") {
+                        if (number.value <= totalNumberQuestionsAddTestToStudentPage) {
+                            let response = await fetch(`/student/${locId}/add/test`, options);
 
-                                if (response.ok)
-                                    window.location.href = `/student/${locId}/test/${testId}/${attempt}`;
-                                else
-                                    alert(resText);
-                            } else
-                                alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                            if (response.ok)
+                                window.location.href = `/student/${locId}/test/${testIdAddTestToStudentPage}/${attemptAddTestToStudentPage}`;
+                            else {
+                                let resText = await response.json();
+                                alert(resText);
+                            }
                         } else
-                            alert("Нельзя создать тест меньше чем с 5 вопросами")
+                            alert("Нельзя выбрать больше вопросов, чем есть в тесте")
                     } else
                         alert("Не введено количество вопросов")
                 };
@@ -184,19 +190,19 @@
     <form name="test choose">
         <div style="margin-bottom: 5px">
             <label for="searchFirstName">Имя</label> <input autocomplete="off" id="searchFirstName" autofocus
-                                                            style="margin-right: 30px" type="text"/>
+                                                            style="margin-right: 32px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
-                                                                 style="margin-right: 64px" type="text"/>
+                                                                 style="margin-right: 66px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSubject">Предмет</label> <input autocomplete="off" id="searchSubject"
-                                                              style="margin-right: 30px" type="text"/>
+                                                              style="margin-right: 62px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchTitle">Название</label> <input autocomplete="off" id="searchTitle"
-                                                             style="margin-right: 100px" type="text"/>
+                                                             style="margin-right: 67px" type="text"/>
         </div>
         <div style="margin-bottom: 10px">
             <input id="searchButton" type="button" value="Поиск"/>
@@ -206,13 +212,12 @@
             <input id="allTestsButton" type="button" value="Все тесты"/>
         </div>
         <div id="questions" hidden style="margin-bottom: 15px">
-            <label for="numberQuestions">Количество вопросов в тесте </label> <input autocomplete="off" autofocus
-                                                                                     id="numberQuestions"
-                                                                                     style="margin-right: 20px"
-                                                                                     type="text"/>
-            <input id="suggestButton" type="button" value="Подтвердить"/>
+            <label for="numberQuestions">Количество вопросов в тесте</label> <input autocomplete="off" autofocus
+                                                                                    id="numberQuestions"
+                                                                                    type="number"/>
+            <input id="suggestButton" type="button" value="Подтвердить" style="margin-right: 100px"/>
         </div>
-        <table bgcolor="#f0f8ff" style="text-align:center" width="600px">
+        <table bgcolor="beige" id="table" hidden style="text-align:center">
             <thead>
             <tr>
                 <th>Предмет</th>
@@ -220,7 +225,7 @@
                 <th>Создатель</th>
                 <th>Всего вопросов</th>
                 <th>Процент прохождения</th>
-                <th>Решить</th>
+                <th>Выбрать</th>
             </tr>
             </thead>
             <tbody id="tests">

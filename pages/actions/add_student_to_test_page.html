@@ -5,6 +5,16 @@
     <title>Студенты</title>
     <script>
         "use strict";
+
+        let attemptsAddStudentToTestPage;
+        let studentIdsAddStudentToTestPage;
+
+        let addStudentToTest = async function (studentIds2, attempts2) {
+            document.getElementById('questions').hidden = false;
+            attemptsAddStudentToTestPage = attempts2;
+            studentIdsAddStudentToTestPage = studentIds2;
+        };
+
         window.onload = async function () {
             try {
                 let loc = window.location.href.split("/");
@@ -19,22 +29,29 @@
                     window.location.href = `/student/${resTextSession.id}`;
                 }
 
+                let response2 = await fetch(`/professor/${locId}/test/${locCode}/info.json`);
+                let resText2 = await response2.json();
+
+                let totalNumberQuestions = resText2.Total_number_of_questions;
+                let createdById = resTextSession.id;
+
                 let getAllStudents = async function () {
                     response = await fetch(`/students/all.json`);
                     resText = await response.json();
 
                     if (response.ok) {
+                        document.getElementById('table').hidden = false;
                         let studentsTable = document.getElementById("students");
                         studentsTable.innerHTML = "";
 
                         for (let i = 0; i < resText.length; i++) {
                             let response3 = await fetch(`/student/${resText[i].Student_id}/tests/info.json`);
-                            let resText3 = await response3.json();
 
                             let attempt = 0;
                             if (response3.ok) {
+                                let resText3 = await response3.json();
                                 for (let j = 0; j < resText3.length; j++) {
-                                    if (resText3[j].Test_id === locCode && resText3[j].Attempt_number > attempt)
+                                    if (resText3[j].Test_id === parseInt(locCode, 10) && resText3[j].Attempt_number > attempt)
                                         attempt = resText3[j].Attempt_number;
                                 }
                             }
@@ -44,7 +61,7 @@
                                 `                <td>${resText[i].First_name} ${resText[i].Second_name}</td>\n` +
                                 `                <td>${resText[i].Group}</td>\n` +
                                 `                <td><input type='button' value='Выбрать'\n` +
-                                `                           onclick="${await addStudentTest([resText[i].Student_id], [attempt])}"/></td>\n` +
+                                `                           onclick="addStudentToTest(${resText[i].Student_id}, ${attempt})"/></td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -77,12 +94,12 @@
                         studentsTable.innerHTML = "";
                         for (let i = 0; i < resText.length; i++) {
                             let response3 = await fetch(`/student/${resText[i].Student_id}/tests/info.json`);
-                            let resText3 = await response3.json();
 
                             let attempt = 0;
                             if (response3.ok) {
+                                let resText3 = await response3.json();
                                 for (let j = 0; j < resText3.length; j++) {
-                                    if (resText3[j].Test_id === locCode && resText3[j].Attempt_number > attempt)
+                                    if (resText3[j].Test_id === parseInt(locCode, 10) && resText3[j].Attempt_number > attempt)
                                         attempt = resText3[j].Attempt_number;
                                 }
                             }
@@ -92,7 +109,7 @@
                                 `                <td>${resText[i].First_name} ${resText[i].Second_name}</td>\n` +
                                 `                <td>${resText[i].Group}</td>\n` +
                                 `                <td><input type='button' value='Выбрать'\n` +
-                                `                           onclick="${await addStudentTest([resText[i].Student_id], [attempt])}"/></td>\n` +
+                                `                           onclick="addStudentToTest(${resText[i].Student_id}, ${attempt})"/></td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -108,45 +125,32 @@
                         attempts.push(0);
                         studentIds.push(resText[i].Student_id);
                         let response3 = await fetch(`/student/${resText[i].Student_id}/tests/info.json`);
-                        let resText3 = await response3.json();
 
                         if (response3.ok) {
+                            let resText3 = await response3.json();
                             for (let j = 0; j < resText3.length; j++) {
-                                if (resText3[j].Test_id === locCode && resText3[j].Attempt_number > attempts[i])
+                                if (resText3[j].Test_id === parseInt(locCode, 10) && resText3[j].Attempt_number > attempts[i])
                                     attempts[i] = resText3[j].Attempt_number;
                             }
                         }
                         attempts[i]++;
                     }
-                    await addStudentTest(studentIds, attempts);
+                    await addStudentToTest(studentIds, attempts);
                 };
-
-                let response2 = await fetch(`/professor/${locId}/test/${locCode}/info.json`);
-                let resText2 = await response2.json();
-
-                let attempts;
-                let studentIds;
-                let totalNumberQuestions = resText2.Total_number_of_questions;
-                let createdById = resTextSession.id;
-
-                let addStudentTest = async function (studentIds2, attempts2) {
-                    document.getElementById('questions').hidden = false;
-                    attempts = attempts2;
-                    studentIds = studentIds2;
-                }
 
                 let suggestButton = document.getElementById('suggestButton');
                 suggestButton.onclick = async function () {
                     let number = document.getElementById("numberQuestions");
+                    studentIdsAddStudentToTestPage = [].concat(studentIdsAddStudentToTestPage)
+                    attemptsAddStudentToTestPage = [].concat(attemptsAddStudentToTestPage)
 
-                    for (let i = 0; i < studentIds.length; i++) {
+                    for (let i = 0; i < studentIdsAddStudentToTestPage.length; i++) {
                         let testData = {
-                            studentId: studentIds[i],
-                            attempt: attempts[i],
+                            attempt: attemptsAddStudentToTestPage[i],
                             testId: locCode,
                             professorId: locId,
                             createdById: createdById,
-                            number: number.value
+                            number: parseInt(number.value, 10)
                         };
 
                         let options = {
@@ -155,20 +159,18 @@
                             body: JSON.stringify(testData)
                         };
 
-                        if (number.value !== "") {
-                            if (number.value > 4) {
-                                if (number.value <= totalNumberQuestions) {
-                                    let response = await fetch(`/student/${studentIds[i]}/add/test`, options);
-                                    let resText = await response.json();
+                        if (number.value !== "" || number.value !== "0") {
+                            if (number.value <= totalNumberQuestions) {
+                                let response = await fetch(`/student/${studentIdsAddStudentToTestPage[i]}/add/test`, options);
 
-                                    if (response.ok && studentIds.length === 1)
-                                        window.location.href = `/student/${studentIds[i]}/test/${locCode}/${attempts[i]}`;
-                                    else if (!response.ok)
-                                        alert(resText);
-                                } else
-                                    alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                                if (response.ok && studentIdsAddStudentToTestPage.length === 1)
+                                    window.location.href = `/student/${studentIdsAddStudentToTestPage[i]}/test/${locCode}/${attemptsAddStudentToTestPage[i]}`;
+                                else if (!response.ok) {
+                                    let resText = await response.json();
+                                    alert(resText);
+                                }
                             } else
-                                alert("Нельзя создать тест меньше чем с 5 вопросами")
+                                alert("Нельзя выбрать больше вопросов, чем есть в тесте")
                         } else
                             alert("Не введено количество вопросов")
                     }
@@ -196,11 +198,11 @@
     <form name="students">
         <div style="margin-bottom: 5px">
             <label for="searchFirstName">Имя</label> <input autocomplete="off" autofocus id="searchFirstName"
-                                                            style="margin-right: 30px" type="text"/>
+                                                            style="margin-right: 32px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSecondName">Фамилия</label> <input autocomplete="off" id="searchSecondName"
-                                                                 style="margin-right: 64px" type="text"/>
+                                                                 style="margin-right: 66px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchStudentGroup">Группа</label> <input autocomplete="off" id="searchStudentGroup"
@@ -217,13 +219,12 @@
             <input id="addToAll" type="button" value="Назначить найденным"/>
         </div>
         <div id="questions" hidden style="margin-bottom: 15px">
-            <label for="numberQuestions">Количество вопросов в тесте </label> <input autocomplete="off" autofocus
-                                                                                     id="numberQuestions"
-                                                                                     style="margin-right: 20px"
-                                                                                     type="text"/>
-            <input id="suggestButton" type="button" value="Подтвердить"/>
+            <label for="numberQuestions">Количество вопросов в тесте</label> <input autocomplete="off" autofocus
+                                                                                    id="numberQuestions"
+                                                                                    type="number"/>
+            <input id="suggestButton" type="button" value="Подтвердить" style="margin-right: 100px"/>
         </div>
-        <table bgcolor="#f0f8ff" style="text-align:center" width="300px">
+        <table bgcolor="beige" id="table" hidden style="text-align:center">
             <thead>
             <tr>
                 <th>Студент</th>

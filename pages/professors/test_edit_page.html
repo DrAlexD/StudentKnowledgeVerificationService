@@ -14,7 +14,7 @@
                 let response = await fetch(`/session/info.json`);
                 let resText = await response.json();
 
-                if (resText.type === "student" || (resText.type === "professor" && locId !== resText.id)) {
+                if (resText.type === "student" || (resText.type === "professor" && resText.id !== parseInt(locId, 10))) {
                     window.location.href = `/professor/${locId}/test/${locCode}`;
                 }
 
@@ -38,7 +38,7 @@
                     let testData = {
                         title: inputs[0].value === resText.Title ? "" : inputs[0].value,
                         subject: inputs[1].value === resText.Subject_title ? "" : inputs[1].value,
-                        percent: inputs[2].value === resText.Percentage_for_test_passing ? "" : inputs[2].value
+                        percent: parseInt(inputs[2].value, 10) === resText.Percentage_for_test_passing ? "" : parseInt(inputs[2].value, 10)
                     };
 
                     let options = {
@@ -66,15 +66,16 @@
     <form name="test edit">
         <div style="margin-bottom: 5px">
             <label for="title">Название</label> <input autocomplete="off" autofocus id="title"
-                                                      style="margin-right: 100px" type="text"/>
+                                                       style="margin-right: 67px" type="text"/>
         </div>
-        <div style="margin-bottom: 10px">
-            <label for="subject">Предмет</label> <input autocomplete="off" id="subject" style="margin-right: 50px"
-                                                           type="text"/>
+        <div style="margin-bottom: 5px">
+            <label for="subject">Предмет</label> <input autocomplete="off" id="subject" style="margin-right: 62px"
+                                                        type="text"/>
         </div>
         <div style="margin-bottom: 15px">
-            <label for="percent">Процент успешного выполнения</label> <input autocomplete="off" id="percent" style="margin-right:20px"
-                                                        type="text"/>
+            <label for="percent">Процент успешного выполнения</label> <input autocomplete="off" id="percent"
+                                                                             style="margin-right:227px"
+                                                                             type="number"/>
         </div>
         <div>
             <input id="backButton" type="button" value="Назад"/>
