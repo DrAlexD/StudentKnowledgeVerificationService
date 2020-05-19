@@ -19,16 +19,17 @@
                     window.location.href = `/student/${resTextSession.id}`;
                 }
 
-                if (resTextSession.type === "professor") {
-                    document.getElementById("deleteButton").hidden = true;
-                }
-
                 response = await fetch(`/student/${locId}/test/${locCode}/${locAttempt}/info.json`);
                 let resTextTest = await response.json();
 
                 document.getElementById("number_of_questions").innerText = resTextTest.Number_of_questions_in_test;
                 if (resTextSession.type === "student") {
                     if (resTextTest.Created_by_id !== 0) {
+                        document.getElementById("deleteButton").hidden = true;
+                    }
+                }
+                if (resTextSession.type === "professor") {
+                    if (resTextTest.Created_by_id !== resTextSession.id || resTextTest.Number_of_correct_answers === null) {
                         document.getElementById("deleteButton").hidden = true;
                     }
                 }
@@ -81,6 +82,12 @@
                     window.location.href = `/student/${locId}`;
                 };
 
+                let solveTestButton = document.getElementById('solveTestButton');
+                if (resTextSession.type === "student")
+                    solveTestButton.value = "Решить";
+                else
+                    solveTestButton.value = "Открыть";
+
                 let deleteButton = document.getElementById('deleteButton');
                 deleteButton.onclick = async function () {
                     try {
@@ -118,11 +125,11 @@
             <label>Процент успешного выполнения:</label> <label id="percent"></label>
         </div>
         <div style="margin-bottom: 5px">
-            <label>Количество вопросов в тесте:</label><label id="number_of_questions"></label>
+            <label>Количество вопросов в тесте:</label> <label id="number_of_questions"></label>
         </div>
         <div style="margin-bottom: 5px">
             <input id="deleteButton" type="button" value="Удалить"/>
-            <input hidden id="solveTestButton" type="button" value="Решить"/>
+            <input hidden id="solveTestButton" type="button"/>
         </div>
         <div style="margin-bottom: 5px">
             <input id="backButton" type="button" value="Назад"/>

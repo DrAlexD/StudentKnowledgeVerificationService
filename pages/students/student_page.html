@@ -60,7 +60,7 @@
                             let response3 = await fetch(`/professor/${resText[i].Created_by_id}/info.json`);
                             let resText3 = await response3.json();
 
-                            if (resTextSession.type === "student")
+                            if (resTextSession.type !== "professor")
                                 created_by = resText3.First_name + " " + resText3.Second_name;
                             else {
                                 if (resTextSession.id === resText[i].Created_by_id)
@@ -74,7 +74,7 @@
                                 f1 = false;
                             }
                             let solved;
-                            if ((resText[i].Number_of_correct_answers / resText[i].Number_of_questions_in_test) * 100 >= resText2.Percentage_for_test_passing) {
+                            if ((resText[i].Number_of_correct_answers / resText[i].Number_of_questions_in_test) * 100 >= resText2.Percentage_for_test_passing - 0.1) {
                                 solved = "Пройден";
                             } else {
                                 solved = "Не пройден";

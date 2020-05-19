@@ -7,7 +7,8 @@
         "use strict";
         window.onload = async function () {
             try {
-                let response;
+                let response = await fetch(`/session/info.json`);
+                let resTextSession = await response.json();
                 let resText;
 
                 let getAllTests = async function () {
@@ -22,11 +23,14 @@
                         for (let i = 0; i < resText.length; i++) {
                             let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
                             let resText2 = await response2.json();
+                            let name = resText2.First_name + " " + resText2.Second_name;
+                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                name = "Я";
                             testsTable.innerHTML += "<tr>\n" +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
                                 `                <td><input type='button' value='${resText[i].Title}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
-                                `                <td><input type='button' value='${resText2.First_name} ${resText2.Second_name}'\n` +
+                                `                <td><input type='button' value='${name}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
                                 `                <td>${resText[i].Total_number_of_questions}</td>\n` +
                                 `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
@@ -65,11 +69,14 @@
                         for (let i = 0; i < resText.length; i++) {
                             let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
                             let resText2 = await response2.json();
+                            let name = resText2.First_name + " " + resText2.Second_name;
+                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                name = "Я";
                             testsTable.innerHTML += "<tr>\n" +
                                 `                <td>${resText[i].Subject_title}</td>\n` +
                                 `                <td><input type='button' value='${resText[i].Title}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
-                                `                <td><input type='button' value='${resText2.First_name} ${resText2.Second_name}'\n` +
+                                `                <td><input type='button' value='${name}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
                                 `                <td>${resText[i].Total_number_of_questions}</td>\n` +
                                 `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
@@ -109,11 +116,11 @@
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchSubject">Предмет</label> <input autocomplete="off" id="searchSubject"
-                                                                 style="margin-right: 62px" type="text"/>
+                                                              style="margin-right: 62px" type="text"/>
         </div>
         <div style="margin-bottom: 5px">
             <label for="searchTitle">Название</label> <input autocomplete="off" id="searchTitle"
-                                                                 style="margin-right: 67px" type="text"/>
+                                                             style="margin-right: 67px" type="text"/>
         </div>
         <div style="margin-bottom: 10px">
             <input id="searchButton" type="button" value="Поиск"/>

@@ -163,9 +163,12 @@
                             if (number.value <= totalNumberQuestions) {
                                 let response = await fetch(`/student/${studentIdsAddStudentToTestPage[i]}/add/test`, options);
 
-                                if (response.ok && studentIdsAddStudentToTestPage.length === 1)
-                                    window.location.href = `/student/${studentIdsAddStudentToTestPage[i]}/test/${locCode}/${attemptsAddStudentToTestPage[i]}`;
-                                else if (!response.ok) {
+                                if (response.ok) {
+                                    if (studentIdsAddStudentToTestPage.length === 1)
+                                        window.location.href = `/student/${studentIdsAddStudentToTestPage[i]}/test/${locCode}/${attemptsAddStudentToTestPage[i]}`;
+                                    else if (i === studentIdsAddStudentToTestPage.length - 1)
+                                        window.location.href = `/professor/${locId}/test/${locCode}`;
+                                } else if (!response.ok) {
                                     let resText = await response.json();
                                     alert(resText);
                                 }

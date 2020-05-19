@@ -7,7 +7,8 @@
         "use strict";
         window.onload = async function () {
             try {
-                let response;
+                let response = await fetch(`/session/info.json`);
+                let resTextSession = await response.json();
                 let resText;
 
                 let getAllProfessors = async function () {
@@ -19,8 +20,11 @@
                         let professorsTable = document.getElementById("professors");
                         professorsTable.innerHTML = "";
                         for (let i = 0; i < resText.length; i++) {
+                            let name = resText[i].First_name + " " + resText[i].Second_name;
+                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                name = "Я";
                             professorsTable.innerHTML += "<tr>\n" +
-                                `               <td><input type='button' value='${resText[i].First_name} ${resText[i].Second_name}'\n` +
+                                `               <td><input type='button' value='${name}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
                                 "            </tr>";
                         }
@@ -52,8 +56,11 @@
                         let professorsTable = document.getElementById("professors");
                         professorsTable.innerHTML = "";
                         for (let i = 0; i < resText.length; i++) {
+                            let name = resText[i].First_name + " " + resText[i].Second_name;
+                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                name = "Я";
                             professorsTable.innerHTML += "<tr>\n" +
-                                `               <td><input type='button' value='${resText[i].First_name} ${resText[i].Second_name}'\n` +
+                                `               <td><input type='button' value='${name}'\n` +
                                 `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
                                 "            </tr>";
                         }
