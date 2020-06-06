@@ -144,23 +144,24 @@
                     studentIdsAddStudentToTestPage = [].concat(studentIdsAddStudentToTestPage)
                     attemptsAddStudentToTestPage = [].concat(attemptsAddStudentToTestPage)
 
-                    for (let i = 0; i < studentIdsAddStudentToTestPage.length; i++) {
-                        let testData = {
-                            attempt: attemptsAddStudentToTestPage[i],
-                            testId: locCode,
-                            professorId: locId,
-                            createdById: createdById,
-                            number: parseInt(number.value, 10)
-                        };
+                    if (number.value !== "" || number.value !== "0") {
+                        if (number.value <= totalNumberQuestions) {
+                            for (let i = 0; i < studentIdsAddStudentToTestPage.length; i++) {
+                                let testData = {
+                                    attempt: attemptsAddStudentToTestPage[i],
+                                    testId: locCode,
+                                    professorId: locId,
+                                    createdById: createdById,
+                                    number: parseInt(number.value, 10)
+                                };
 
-                        let options = {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify(testData)
-                        };
+                                let options = {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify(testData)
+                                };
 
-                        if (number.value !== "" || number.value !== "0") {
-                            if (number.value <= totalNumberQuestions) {
+
                                 let response = await fetch(`/student/${studentIdsAddStudentToTestPage[i]}/add/test`, options);
 
                                 if (response.ok) {
@@ -172,11 +173,11 @@
                                     let resText = await response.json();
                                     alert(resText);
                                 }
-                            } else
-                                alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                            }
                         } else
-                            alert("Не введено количество вопросов")
-                    }
+                            alert("Нельзя выбрать больше вопросов, чем есть в тесте")
+                    } else
+                        alert("Не введено количество вопросов")
                 };
 
                 let allStudentsButton = document.getElementById('allStudentsButton');
