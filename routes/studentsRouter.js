@@ -6,7 +6,7 @@ const studentsRouter = express.Router();
 
 const con = mysql.createConnection({
     user: "root",
-    password: "123456",
+    password: "1234",
     database: "knowledge_verification_service"
 });
 
@@ -346,7 +346,7 @@ studentsRouter.post('/:id/add/test', (req, res) => {
                                         );
                                     }
                                 } else {
-                                    console.error("Не найдены вопросы у теста преподавателя");
+                                    console.error("Не найдены ответы у вопроса из теста преподавателя");
                                 }
                             }
                         }

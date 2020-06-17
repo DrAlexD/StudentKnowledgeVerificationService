@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Действия</title>
+    <style>
+        input {
+            border: 1px solid;
+            border-radius: 10px;
+            font-size: medium;
+        }
+        label {
+            font-size: large;
+        }
+        tr {
+            font-size: large;
+        }
+    </style>
     <script>
         "use strict";
         window.onload = async function () {
@@ -55,7 +68,7 @@
 
 <body>
 <div align="center" style="margin-top: 100px">
-    <h2> Действия </h2>
+    <h1> Действия </h1>
     <form name="actions">
         <div style="margin-bottom: 10px">
             <input id="addStudentPageButton" onclick="window.location.href = '/add/student'" type="button"

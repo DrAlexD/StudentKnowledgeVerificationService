@@ -6,7 +6,7 @@ const actionsRouter = express.Router();
 
 const con = mysql.createConnection({
     user: "root",
-    password: "123456",
+    password: "1234",
     database: "knowledge_verification_service"
 });
 

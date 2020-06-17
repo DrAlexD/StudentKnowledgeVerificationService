@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Добавить тест</title>
+    <style>
+        input {
+            border: 1px solid;
+            border-radius: 10px;
+            font-size: medium;
+        }
+        label {
+            font-size: large;
+        }
+        tr {
+            font-size: large;
+        }
+    </style>
     <script>
         "use strict";
         window.onload = async function () {
@@ -59,7 +72,7 @@
 
 <body>
 <div align="center" style="margin-top: 100px;">
-    <h2> Добавить тест </h2>
+    <h1> Добавить тест </h1>
     <form name="add test">
         <div style="margin-bottom: 5px">
             <label for="title">Название</label> <input autocomplete="off" autofocus id="title"
@@ -71,7 +84,7 @@
         </div>
         <div style="margin-bottom: 15px">
             <label for="percent">Процент успешного выполнения</label> <input autocomplete="off" id="percent"
-                                                                             style="margin-right: 227px" type="number"/>
+                                                                             style="margin-right: 247px" type="number"/>
         </div>
         <div>
             <input id="backButton" type="button" value="Назад"/>
