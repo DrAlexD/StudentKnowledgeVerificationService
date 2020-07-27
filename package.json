@@ -7,11 +7,16 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "cookie-parser": "~1.4.4",
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "express-mysql-session": "^2.1.4",
     "express-session": "^1.17.1",
+    "faker": "^4.1.0",
+    "mocha": "^8.0.1",
+    "mocha-testcheck": "^1.0.0-rc.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1"
   },

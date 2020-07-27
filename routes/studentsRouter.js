@@ -13,41 +13,34 @@ const con = mysql.createConnection({
 con.connect(err => err ? console.error(err) : console.log("StudentsRouter connected to MySQL database!"));
 
 studentsRouter.get('/:id', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student WHERE Student_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/students/student_page.html'));
-                    else
-                        res.redirect('/students');
-                }
+    con.query(`SELECT * FROM student WHERE Student_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.sendFile(path.join(__dirname, '../pages/students/student_page.html'));
+                else
+                    res.redirect('/students');
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 studentsRouter.get('/:id/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student WHERE Student_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.status(200).json(result[0]);
-                    else
-                        res.redirect('/students');
-                }
+    con.query(`SELECT * FROM student WHERE Student_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.status(200).json(result[0]);
+                else
+                    res.redirect('/students');
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
+
 });
 
 studentsRouter.get('/:id/delete', (req, res) => {
@@ -60,23 +53,20 @@ studentsRouter.get('/:id/delete', (req, res) => {
 });
 
 studentsRouter.get('/:id/edit', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student WHERE Student_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.sendFile(path.join(__dirname, '../pages/students/student_edit_page.html'));
-                    } else {
-                        res.redirect('/students');
-                    }
+    con.query(`SELECT * FROM student WHERE Student_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.sendFile(path.join(__dirname, '../pages/students/student_edit_page.html'));
+                } else {
+                    res.redirect('/students');
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
+
 });
 
 studentsRouter.post('/:id/edit', (req, res) => {
@@ -123,72 +113,57 @@ studentsRouter.post('/:id/edit', (req, res) => {
 });
 
 studentsRouter.get('/:id/tests/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_test WHERE Student_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).send("Не найдены тесты студента");
-                    }
+    con.query(`SELECT * FROM student_test WHERE Student_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Не найдены тесты студента");
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 studentsRouter.get('/:id/test/:code/:attempt', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_test WHERE Student_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}'AND Attempt_number='${req.params.attempt}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/students/student_test_page.html'));
-                    else
-                        res.redirect(`/student/${req.params.id}`);
-                }
+    con.query(`SELECT * FROM student_test WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}'AND Attempt_number='${req.params.attempt}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.sendFile(path.join(__dirname, '../pages/students/student_test_page.html'));
+                else
+                    res.redirect(`/student/${req.params.id}`);
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 studentsRouter.get('/:id/test/:code/:attempt/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_test WHERE Student_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result[0]);
-                    } else {
-                        res.redirect(`/student/${req.params.id}`);
-                    }
+    con.query(`SELECT * FROM student_test WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result[0]);
+                } else {
+                    res.redirect(`/student/${req.params.id}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
+
 });
 
 studentsRouter.get('/:id/add/test', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/students/add_test_to_student_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/students/add_test_to_student_page.html'));
 });
 
 studentsRouter.post('/:id/add/test', (req, res) => {
@@ -386,91 +361,76 @@ studentsRouter.get('/:id/test/:code/:attempt/delete', (req, res) => {
         else
             res.end();
     });
-});
+}); //TODO проверить
 
 studentsRouter.get('/:id/test/:code/:attempt/questions/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}'  AND Attempt_number='${req.params.attempt}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).send("Не найдены вопросы студента");
-                    }
+    con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}'  AND Attempt_number='${req.params.attempt}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Не найдены вопросы студента");
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
+
 });
 
 studentsRouter.get('/:id/test/:code/:attempt/question/:numb', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}'AND Attempt_number='${req.params.attempt}'` +
-            ` AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/students/student_question_page.html'));
-                    else
-                        res.redirect(`/student/${req.params.id}/test/${req.params.code}/${req.params.attempt}`);
-                }
+    con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}'AND Attempt_number='${req.params.attempt}'` +
+        ` AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.sendFile(path.join(__dirname, '../pages/students/student_question_page.html'));
+                else
+                    res.redirect(`/student/${req.params.id}/test/${req.params.code}/${req.params.attempt}`);
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 studentsRouter.get('/:id/test/:code/:attempt/question/:numb/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}'` +
-            ` AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result[0]);
-                    } else {
-                        res.redirect(`/student/${req.params.id}/test/${req.params.code}/${req.params.attempt}`);
-                    }
+    con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Attempt_number='${req.params.attempt}'` +
+        ` AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result[0]);
+                } else {
+                    res.redirect(`/student/${req.params.id}/test/${req.params.code}/${req.params.attempt}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 studentsRouter.get('/:id/test/:code/:attempt/question/:numb/answers/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student_answer WHERE Student_id='${req.params.id}' AND Test_id='${req.params.code}'` +
-            ` AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).send("Не найдены ответы студента");
-                    }
+    con.query(`SELECT * FROM student_answer WHERE Student_id='${req.params.id}' AND Test_id='${req.params.code}'` +
+        ` AND Attempt_number='${req.params.attempt}' AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Не найдены ответы студента");
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 studentsRouter.post('/:id/test/:code/:attempt/question/:numb/solve', (req, res) => {

@@ -17,11 +17,7 @@ actionsRouter.get('/', (req, res) => {
 });
 
 actionsRouter.get('/session/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.status(200).json(req.session.user);
-    } else {
-        res.redirect('/login');
-    }
+    res.status(200).json(req.session.user);
 });
 
 actionsRouter.get('/logout', (req, res) => {
@@ -33,11 +29,7 @@ actionsRouter.get('/logout', (req, res) => {
 });
 
 actionsRouter.get('/login', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.redirect('/actions');
-    } else {
-        res.sendFile(path.join(__dirname, '../pages/actions/log_in_page.html'));
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/log_in_page.html'));
 });
 
 actionsRouter.post('/login', (req, res) => {
@@ -96,19 +88,11 @@ actionsRouter.post('/login', (req, res) => {
 });
 
 actionsRouter.get('/actions', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/actions_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/actions_page.html'));
 });
 
 actionsRouter.get('/add/student', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/add_student_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/add_student_page.html'));
 });
 
 actionsRouter.post('/add/student', (req, res) => {
@@ -123,7 +107,15 @@ actionsRouter.post('/add/student', (req, res) => {
                         console.error(err1);
                         res.status(400).json("Копия имеющегося студента");
                     } else {
-                        res.end();
+                        con.query(`SELECT * FROM student WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}'`,
+                            function (err2, result) {
+                                if (err2)
+                                    console.error(err2);
+                                else {
+                                    res.status(200).json(result[0]);
+                                }
+                            }
+                        );
                     }
                 }
             );
@@ -136,31 +128,23 @@ actionsRouter.post('/add/student', (req, res) => {
 });
 
 actionsRouter.get('/students', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/students_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/students_page.html'));
 });
 
 actionsRouter.get('/students/all.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM student`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).json(`Не найдены студенты`);
-                    }
+    con.query(`SELECT * FROM student`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).json(`Не найдены студенты`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 actionsRouter.post('/students', (req, res) => {
@@ -280,11 +264,7 @@ actionsRouter.post('/students', (req, res) => {
 });
 
 actionsRouter.get('/add/professor', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/add_professor_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/add_professor_page.html'));
 });
 
 actionsRouter.post('/add/professor', (req, res) => {
@@ -298,7 +278,15 @@ actionsRouter.post('/add/professor', (req, res) => {
                         console.error(err1);
                         res.status(400).json("Копия имеющегося преподавателя");
                     } else {
-                        res.end();
+                        con.query(`SELECT * FROM professor WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}'`,
+                            function (err2, result) {
+                                if (err2)
+                                    console.error(err2);
+                                else {
+                                    res.status(200).json(result[0]);
+                                }
+                            }
+                        );
                     }
                 }
             );
@@ -311,31 +299,23 @@ actionsRouter.post('/add/professor', (req, res) => {
 });
 
 actionsRouter.get('/professors', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/professors_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/professors_page.html'));
 });
 
 actionsRouter.get('/professors/all.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM professor`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).json(`Не найдены преподаватели`);
-                    }
+    con.query(`SELECT * FROM professor`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).json(`Не найдены преподаватели`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 actionsRouter.post('/professors', (req, res) => {
@@ -391,31 +371,23 @@ actionsRouter.post('/professors', (req, res) => {
 });
 
 actionsRouter.get('/tests', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/tests_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/tests_page.html'));
 });
 
 actionsRouter.get('/tests/all.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM test`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).json(`Не найдены тесты`);
-                    }
+    con.query(`SELECT * FROM test`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).json(`Не найдены тесты`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 actionsRouter.post('/tests', (req, res) => {
@@ -668,11 +640,7 @@ actionsRouter.post('/tests', (req, res) => {
 });
 
 actionsRouter.get('/add/student/professor/:id/test/:code', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/actions/add_student_to_test_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/actions/add_student_to_test_page.html'));
 });
 
 module.exports = actionsRouter;

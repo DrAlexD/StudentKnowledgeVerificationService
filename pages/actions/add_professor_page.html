@@ -9,9 +9,11 @@
             border-radius: 10px;
             font-size: medium;
         }
+
         label {
             font-size: large;
         }
+
         tr {
             font-size: large;
         }
@@ -47,11 +49,11 @@
                     };
 
                     let response = await fetch('/add/professor', options);
+                    let resText = await response.json();
 
                     if (response.ok)
-                        window.location.href = `/actions`;
+                        window.location.href = `/professor/${resText.Professor_id}`;
                     else {
-                        let resText = await response.json();
                         alert(resText);
                     }
                 };

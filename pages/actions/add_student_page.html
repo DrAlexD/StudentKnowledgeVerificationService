@@ -9,9 +9,11 @@
             border-radius: 10px;
             font-size: medium;
         }
+
         label {
             font-size: large;
         }
+
         tr {
             font-size: large;
         }
@@ -48,11 +50,11 @@
                     };
 
                     response = await fetch('/add/student', options);
+                    let resText = await response.json();
 
                     if (response.ok)
-                        window.location.href = `/actions`;
+                        window.location.href = `/student/${resText.Student_id}`;
                     else {
-                        let resText = await response.json();
                         alert(resText);
                     }
                 };

@@ -13,41 +13,33 @@ const con = mysql.createConnection({
 con.connect(err => err ? console.error(err) : console.log("ProfessorsRouter connected to MySQL database!"));
 
 professorsRouter.get('/:id', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM professor WHERE Professor_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/professors/professor_page.html'));
-                    else
-                        res.redirect('/professors');
-                }
+    con.query(`SELECT * FROM professor WHERE Professor_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.sendFile(path.join(__dirname, '../pages/professors/professor_page.html'));
+                else
+                    res.redirect('/professors');
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM professor WHERE Professor_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.status(200).json(result[0]);
-                    else
-                        res.redirect('/professors');
-                }
+    con.query(`SELECT * FROM professor WHERE Professor_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.status(200).json(result[0]);
+                else
+                    res.redirect('/professors');
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/delete', (req, res) => {
@@ -60,23 +52,19 @@ professorsRouter.get('/:id/delete', (req, res) => {
 });
 
 professorsRouter.get('/:id/edit', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM professor WHERE Professor_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.sendFile(path.join(__dirname, '../pages/professors/professor_edit_page.html'));
-                    } else {
-                        res.redirect('/professors');
-                    }
+    con.query(`SELECT * FROM professor WHERE Professor_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.sendFile(path.join(__dirname, '../pages/professors/professor_edit_page.html'));
+                } else {
+                    res.redirect('/professors');
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.post('/:id/edit', (req, res) => {
@@ -116,31 +104,23 @@ professorsRouter.post('/:id/edit', (req, res) => {
 });
 
 professorsRouter.get('/:id/tests/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).send("Не найдены тесты преподавателя");
-                    }
+    con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Не найдены тесты преподавателя");
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/add/test', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/professors/add_test_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/professors/add_test_page.html'));
 });
 
 professorsRouter.post('/:id/add/test', (req, res) => {
@@ -169,42 +149,34 @@ professorsRouter.post('/:id/add/test', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/professors/test_page.html'));
-                    else
-                        res.redirect(`/professor/${req.params.id}`);
-                }
+    con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.sendFile(path.join(__dirname, '../pages/professors/test_page.html'));
+                else
+                    res.redirect(`/professor/${req.params.id}`);
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/test/:code/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result[0]);
-                    } else {
-                        res.redirect(`/professor/${req.params.id}`);
-                    }
+    con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result[0]);
+                } else {
+                    res.redirect(`/professor/${req.params.id}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/test/:code/delete', (req, res) => {
@@ -217,23 +189,19 @@ professorsRouter.get('/:id/test/:code/delete', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/edit', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.sendFile(path.join(__dirname, '../pages/professors/test_edit_page.html'));
-                    } else {
-                        res.redirect(`/professor/${req.params.id}`);
-                    }
+    con.query(`SELECT * FROM test WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.sendFile(path.join(__dirname, '../pages/professors/test_edit_page.html'));
+                } else {
+                    res.redirect(`/professor/${req.params.id}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.post('/:id/test/:code/edit', (req, res) => {
@@ -262,31 +230,23 @@ professorsRouter.post('/:id/test/:code/edit', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/questions/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).send("Не найдены вопросы у теста преподавателя");
-                    }
+    con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Не найдены вопросы у теста преподавателя");
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/test/:code/add/question', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        res.sendFile(path.join(__dirname, '../pages/professors/add_question_page.html'));
-    } else {
-        res.redirect('/login');
-    }
+    res.sendFile(path.join(__dirname, '../pages/professors/add_question_page.html'));
 });
 
 professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
@@ -365,44 +325,36 @@ professorsRouter.post('/:id/test/:code/add/question', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined')
-                        res.sendFile(path.join(__dirname, '../pages/professors/question_page.html'));
-                    else
-                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
-                }
+    con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined')
+                    res.sendFile(path.join(__dirname, '../pages/professors/question_page.html'));
+                else
+                    res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result[0]);
-                    } else {
-                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
-                    }
+    con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result[0]);
+                } else {
+                    res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/delete', (req, res) => {
@@ -432,24 +384,20 @@ professorsRouter.get('/:id/test/:code/question/:numb/delete', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/edit', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.sendFile(path.join(__dirname, '../pages/professors/question_edit_page.html'));
-                    } else {
-                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
-                    }
+    con.query(`SELECT * FROM question WHERE Professor_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.sendFile(path.join(__dirname, '../pages/professors/question_edit_page.html'));
+                } else {
+                    res.redirect(`/professor/${req.params.id}/test/${req.params.code}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
@@ -508,24 +456,20 @@ professorsRouter.post('/:id/test/:code/question/:numb/edit', (req, res) => {
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/answers/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}'` +
-            ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result);
-                    } else {
-                        res.status(404).send("Не найдены ответы на вопрос у теста преподавателя");
-                    }
+    con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}'` +
+        ` AND Test_id='${req.params.code}' AND Question_id='${req.params.numb}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Не найдены ответы на вопрос у теста преподавателя");
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 professorsRouter.post('/:id/test/:code/question/:numb/add/answer', (req, res) => {
@@ -565,24 +509,20 @@ professorsRouter.get('/:id/test/:code/question/:numb/answer/:vers/delete', (req,
 });
 
 professorsRouter.get('/:id/test/:code/question/:numb/answer/:vers/info.json', (req, res) => {
-    if (typeof req.session.user != 'undefined') {
-        con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'` +
-            ` AND Question_id='${req.params.numb}' AND Answer_id='${req.params.vers}'`,
-            function (err, result) {
-                if (err)
-                    console.error(err);
-                else {
-                    if (typeof result[0] != 'undefined') {
-                        res.status(200).json(result[0]);
-                    } else {
-                        res.redirect(`/professor/${req.params.id}/test/${req.params.code}/question/${req.params.numb}`);
-                    }
+    con.query(`SELECT * FROM answer WHERE Professor_id='${req.params.id}' AND Test_id='${req.params.code}'` +
+        ` AND Question_id='${req.params.numb}' AND Answer_id='${req.params.vers}'`,
+        function (err, result) {
+            if (err)
+                console.error(err);
+            else {
+                if (typeof result[0] != 'undefined') {
+                    res.status(200).json(result[0]);
+                } else {
+                    res.redirect(`/professor/${req.params.id}/test/${req.params.code}/question/${req.params.numb}`);
                 }
             }
-        );
-    } else {
-        res.redirect('/login');
-    }
+        }
+    );
 });
 
 module.exports = professorsRouter;
