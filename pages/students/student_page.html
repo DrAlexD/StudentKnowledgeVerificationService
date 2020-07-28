@@ -49,7 +49,7 @@
 
                 document.getElementById("firstName").innerText = resText.First_name;
                 document.getElementById("secondName").innerText = resText.Second_name;
-                document.getElementById("group").innerText = resText.Group;
+                document.getElementById("group").innerText = resText.Student_group;
 
                 response = await fetch(`/student/${locId}/tests/info.json`);
 

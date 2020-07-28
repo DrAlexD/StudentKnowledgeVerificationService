@@ -101,7 +101,7 @@ actionsRouter.post('/add/student', (req, res) => {
         log += (req.body.studentGroup).slice(-2);
         let pas = `123456`;
         if (log !== "admin") {
-            con.query("INSERT INTO student (`First_name`, `Second_name`, `Group`, `Login`, `Password`) " + `VALUES ('${req.body.firstName}', '${req.body.secondName}', '${req.body.studentGroup}', '${log}', '${pas}')`,
+            con.query("INSERT INTO student (`First_name`, `Second_name`, `Student_group`, `Login`, `Password`) " + `VALUES ('${req.body.firstName}', '${req.body.secondName}', '${req.body.studentGroup}', '${log}', '${pas}')`,
                 function (err1) {
                     if (err1) {
                         console.error(err1);
@@ -151,7 +151,7 @@ actionsRouter.post('/students', (req, res) => {
     if (req.body.firstName !== "") {
         if (req.body.secondName !== "") {
             if (req.body.studentGroup !== "") {
-                con.query(`SELECT * FROM student WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}' AND Group='${req.body.studentGroup}'`,
+                con.query(`SELECT * FROM student WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}' AND Student_group='${req.body.studentGroup}'`,
                     function (err, result) {
                         if (err) {
                             console.error(err);
@@ -181,7 +181,7 @@ actionsRouter.post('/students', (req, res) => {
             }
         } else {
             if (req.body.studentGroup !== "") {
-                con.query(`SELECT * FROM student WHERE First_name='${req.body.firstName}' AND Group='${req.body.studentGroup}'`,
+                con.query(`SELECT * FROM student WHERE First_name='${req.body.firstName}' AND Student_group='${req.body.studentGroup}'`,
                     function (err, result) {
                         if (err) {
                             console.error(err);
@@ -213,7 +213,7 @@ actionsRouter.post('/students', (req, res) => {
     } else {
         if (req.body.secondName !== "") {
             if (req.body.studentGroup !== "") {
-                con.query(`SELECT * FROM student WHERE Second_name='${req.body.secondName}' AND Group='${req.body.studentGroup}'`,
+                con.query(`SELECT * FROM student WHERE Second_name='${req.body.secondName}' AND Student_group='${req.body.studentGroup}'`,
                     function (err, result) {
                         if (err) {
                             console.error(err);
@@ -243,7 +243,7 @@ actionsRouter.post('/students', (req, res) => {
             }
         } else {
             if (req.body.studentGroup !== "") {
-                con.query(`SELECT * FROM student WHERE Group='${req.body.studentGroup}'`,
+                con.query(`SELECT * FROM student WHERE Student_group='${req.body.studentGroup}'`,
                     function (err, result) {
                         if (err) {
                             console.error(err);
@@ -391,249 +391,120 @@ actionsRouter.get('/tests/all.json', (req, res) => {
 });
 
 actionsRouter.post('/tests', (req, res) => {
-    if (req.body.firstName !== "") {
-        if (req.body.secondName !== "") {
-            if (req.body.title !== "") {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}'` +
-                        ` AND Title='${req.body.title}' AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+    if (req.body.professorId !== "") {
+        if (req.body.title !== "") {
+            if (req.body.subject !== "") {
+                con.query(`SELECT * FROM test WHERE Professor_id='${req.body.professorId}'` +
+                    ` AND Title='${req.body.title}' AND Subject_title='${req.body.subject}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}'` +
-                        ` AND Title='${req.body.title}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             } else {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}'` +
-                        ` AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+                con.query(`SELECT * FROM test WHERE Professor_id='${req.body.professorId}'` +
+                    ` AND Title='${req.body.title}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Second_name='${req.body.secondName}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             }
         } else {
-            if (req.body.title !== "") {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Title='${req.body.title}'` +
-                        ` AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+            if (req.body.subject !== "") {
+                con.query(`SELECT * FROM test WHERE Professor_id='${req.body.professorId}'` +
+                    ` AND Subject_title='${req.body.subject}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Title='${req.body.title}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             } else {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}' AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+                con.query(`SELECT * FROM test WHERE Professor_id='${req.body.professorId}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE First_name='${req.body.firstName}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             }
         }
     } else {
-        if (req.body.secondName !== "") {
-            if (req.body.title !== "") {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE Second_name='${req.body.secondName}' AND Title='${req.body.title}'` +
-                        ` AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+        if (req.body.title !== "") {
+            if (req.body.subject !== "") {
+                con.query(`SELECT * FROM test WHERE Title='${req.body.title}'` +
+                    ` AND Subject_title='${req.body.subject}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE Second_name='${req.body.secondName}' AND Title='${req.body.title}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             } else {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE Second_name='${req.body.secondName}' AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+                con.query(`SELECT * FROM test WHERE Title='${req.body.title}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE Second_name='${req.body.secondName}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             }
         } else {
-            if (req.body.title !== "") {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE Title='${req.body.title}' AND Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
+            if (req.body.subject !== "") {
+                con.query(`SELECT * FROM test WHERE Subject_title='${req.body.subject}'`,
+                    function (err, result) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            if (typeof result[0] != 'undefined') {
+                                res.status(200).json(result);
                             } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
+                                res.status(404).json(`Не найдены тесты`);
                             }
                         }
-                    );
-                } else {
-                    con.query(`SELECT * FROM test WHERE Title='${req.body.title}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             } else {
-                if (req.body.subject !== "") {
-                    con.query(`SELECT * FROM test WHERE Subject_title='${req.body.subject}'`,
-                        function (err, result) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                if (typeof result[0] != 'undefined') {
-                                    res.status(200).json(result);
-                                } else {
-                                    res.status(404).json(`Не найдены тесты`);
-                                }
-                            }
-                        }
-                    );
-                } else {
-                    res.status(400).json("Не введены имя, фамилия, название или предмет");
-                }
+                res.status(400).json("Не введены имя, фамилия, название или предмет");
             }
         }
     }

@@ -79,7 +79,8 @@ professorsRouter.post('/:id/edit', (req, res) => {
                     res.end();
             });
         }
-    }
+    } else
+        res.end();
 
     if (req.body.firstName !== "") {
         con.query("UPDATE professor SET First_name" + `='${req.body.firstName}' WHERE Professor_id='${req.params.id}'`, err => {

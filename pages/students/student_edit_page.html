@@ -44,7 +44,7 @@
 
                 document.getElementById("firstName").value = resText.First_name;
                 document.getElementById("secondName").value = resText.Second_name;
-                document.getElementById("studentGroup").value = resText.Group;
+                document.getElementById("studentGroup").value = resText.Student_group;
                 document.getElementById("login").value = resText.Login;
                 document.getElementById("password").value = resText.Password;
 
@@ -60,7 +60,7 @@
                     let studentData = {
                         firstName: inputs[0].value === resText.First_name ? "" : inputs[0].value,
                         secondName: inputs[1].value === resText.Second_name ? "" : inputs[1].value,
-                        studentGroup: inputs[2].value === resText.Group ? "" : inputs[2].value,
+                        studentGroup: inputs[2].value === resText.Student_group ? "" : inputs[2].value,
                         login: inputs[3].value === resText.Login ? "" : inputs[3].value,
                         password: inputs[4].value === resText.Password ? "" : inputs[4].value
                     };

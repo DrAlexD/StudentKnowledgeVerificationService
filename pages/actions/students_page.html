@@ -39,7 +39,7 @@
                             studentsTable.innerHTML += "<tr>\n" +
                                 `                <td><input type='button' value='${resText[i].First_name} ${resText[i].Second_name}'\n` +
                                 `                           onclick="window.location.href = '/student/${resText[i].Student_id}'"/></td>\n` +
-                                `                <td>${resText[i].Group}</td>\n` +
+                                `                <td>${resText[i].Student_group}</td>\n` +
                                 "            </tr>";
                         }
                     } else
@@ -74,7 +74,7 @@
                             studentsTable.innerHTML += "<tr>\n" +
                                 `                <td><input type='button' value='${resText[i].First_name} ${resText[i].Second_name}'\n` +
                                 `                           onclick="window.location.href = '/student/${resText[i].Student_id}'"/></td>\n` +
-                                `                <td>${resText[i].Group}</td>\n` +
+                                `                <td>${resText[i].Student_group}</td>\n` +
                                 "            </tr>";
                         }
                     } else

@@ -81,7 +81,8 @@ studentsRouter.post('/:id/edit', (req, res) => {
                     res.end();
             });
         }
-    }
+    } else
+        res.end();
 
     if (req.body.firstName !== "") {
         con.query("UPDATE student SET First_name" + `='${req.body.firstName}' WHERE Student_id='${req.params.id}'`, err => {
@@ -98,7 +99,7 @@ studentsRouter.post('/:id/edit', (req, res) => {
     }
 
     if (req.body.studentGroup !== "") {
-        con.query("UPDATE student SET `Group`" + `='${req.body.studentGroup}' WHERE Student_id='${req.params.id}'`, err => {
+        con.query("UPDATE student SET `Student_group`" + `='${req.body.studentGroup}' WHERE Student_id='${req.params.id}'`, err => {
             if (err)
                 console.error(err);
         });
@@ -361,7 +362,7 @@ studentsRouter.get('/:id/test/:code/:attempt/delete', (req, res) => {
         else
             res.end();
     });
-}); //TODO проверить
+});
 
 studentsRouter.get('/:id/test/:code/:attempt/questions/info.json', (req, res) => {
     con.query(`SELECT * FROM student_question WHERE Student_id='${req.params.id}'` +

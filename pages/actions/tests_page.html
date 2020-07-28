@@ -9,9 +9,11 @@
             border-radius: 10px;
             font-size: medium;
         }
+
         label {
             font-size: large;
         }
+
         tr {
             font-size: large;
         }
@@ -59,44 +61,106 @@
 
                 let searchButton = document.getElementById('searchButton');
                 searchButton.onclick = async function () {
-                    let testData = {
+                    let professorData = {
                         firstName: inputs[0].value,
                         secondName: inputs[1].value,
-                        subject: inputs[2].value,
-                        title: inputs[3].value
                     };
 
                     let options = {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(testData)
+                        body: JSON.stringify(professorData)
                     };
 
-                    response = await fetch('/tests', options);
-                    resText = await response.json();
-
-                    if (response.ok) {
-                        let testsTable = document.getElementById("tests");
-                        testsTable.innerHTML = "";
-
-                        for (let i = 0; i < resText.length; i++) {
-                            let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
-                            let resText2 = await response2.json();
-                            let name = resText2.First_name + " " + resText2.Second_name;
-                            if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
-                                name = "Я";
-                            testsTable.innerHTML += "<tr>\n" +
-                                `                <td>${resText[i].Subject_title}</td>\n` +
-                                `                <td><input type='button' value='${resText[i].Title}'\n` +
-                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
-                                `                <td><input type='button' value='${name}'\n` +
-                                `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
-                                `                <td>${resText[i].Total_number_of_questions}</td>\n` +
-                                `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
-                                "            </tr>";
-                        }
+                    let flag = true;
+                    let professorIds = [];
+                    if (inputs[0].value !== "" || inputs[1].value !== "") {
+                        response = await fetch('/professors', options);
+                        resText = await response.json();
+                        if (response.ok) {
+                            for (let i = 0; i < resText.length; i++) {
+                                professorIds.push(resText[i].Professor_id);
+                            }
+                        } else
+                            flag = false;
                     } else
-                        alert(resText);
+                        flag = false;
+
+                    let testsTable = document.getElementById("tests");
+                    testsTable.innerHTML = "";
+
+                    if (flag) {
+                        for (let i = 0; i < professorIds.length; i++) {
+                            let testData = {
+                                professorId: professorIds[i],
+                                subject: inputs[2].value,
+                                title: inputs[3].value
+                            };
+
+                            options = {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(testData)
+                            };
+
+                            response = await fetch('/tests', options);
+                            resText = await response.json();
+
+                            if (response.ok) {
+                                for (let i = 0; i < resText.length; i++) {
+                                    let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
+                                    let resText2 = await response2.json();
+                                    let name = resText2.First_name + " " + resText2.Second_name;
+                                    if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                        name = "Я";
+                                    testsTable.innerHTML += "<tr>\n" +
+                                        `                <td>${resText[i].Subject_title}</td>\n` +
+                                        `                <td><input type='button' value='${resText[i].Title}'\n` +
+                                        `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
+                                        `                <td><input type='button' value='${name}'\n` +
+                                        `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
+                                        `                <td>${resText[i].Total_number_of_questions}</td>\n` +
+                                        `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
+                                        "            </tr>";
+                                }
+                            }
+                        }
+                    } else {
+                        let testData = {
+                            professorId: "",
+                            subject: inputs[2].value,
+                            title: inputs[3].value
+                        };
+
+                        options = {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(testData)
+                        };
+
+                        response = await fetch('/tests', options);
+                        resText = await response.json();
+
+                        if (response.ok) {
+                            for (let i = 0; i < resText.length; i++) {
+                                let response2 = await fetch(`/professor/${resText[i].Professor_id}/info.json`);
+                                let resText2 = await response2.json();
+                                let name = resText2.First_name + " " + resText2.Second_name;
+                                if (resTextSession.type === "professor" && resTextSession.id === resText[i].Professor_id)
+                                    name = "Я";
+                                testsTable.innerHTML += "<tr>\n" +
+                                    `                <td>${resText[i].Subject_title}</td>\n` +
+                                    `                <td><input type='button' value='${resText[i].Title}'\n` +
+                                    `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}/test/${resText[i].Test_id}'"/></td>\n` +
+                                    `                <td><input type='button' value='${name}'\n` +
+                                    `                           onclick="window.location.href = '/professor/${resText[i].Professor_id}'"/></td>\n` +
+                                    `                <td>${resText[i].Total_number_of_questions}</td>\n` +
+                                    `                <td>${resText[i].Percentage_for_test_passing}</td>\n` +
+                                    "            </tr>";
+                            }
+                        } else
+                            alert(resText);
+                    }
                 };
 
                 let allTestsButton = document.getElementById('allTestsButton');
