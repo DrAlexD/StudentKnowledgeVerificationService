@@ -637,9 +637,9 @@ describe('Автоматическое тестирование веб-серв�
             it('Проверка изменения информации о вопросе', (done) => {
                 let questionEditData = {
                     text: "",
-                    answers: [{text: "answerTextEdited1", is_correct_answer: true},
-                        {text: "answerTextEdited2", is_correct_answer: false},
-                        {text: "answerTextEdited3", is_correct_answer: true}]
+                    answers: [{text: "answerTextEdited1", is_correct_answer: true, id: testAnswerId - 2},
+                        {text: "answerTextEdited2", is_correct_answer: false, id: testAnswerId - 1},
+                        {text: "answerTextEdited3", is_correct_answer: true, id: testAnswerId}]
                 };
                 chai.request(app)
                     .post(`/professor/${testProfessorId}/test/${testTestId}/question/${testQuestionId}/edit`)

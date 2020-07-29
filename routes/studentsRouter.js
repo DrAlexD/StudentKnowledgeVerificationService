@@ -266,10 +266,10 @@ studentsRouter.post('/:id/add/test', (req, res) => {
                                     let right_number = 0;
                                     let wrong_number = 0;
                                     while (right_number < 1 || wrong_number < 1) {
-                                        for (let i = 0; i < mask.length; i++) {
-                                            mask[i] = 1;
-                                        }
+                                        right_number = 0;
+                                        wrong_number = 0;
                                         for (let i = 0; i < result2.length; i++) {
+                                            mask[i] = 1;
                                             if (getRandomInt(result2.length < 8 ? 10 - result2.length : 2) === 0) {
                                                 mask[i] = 0;
                                             } else {
